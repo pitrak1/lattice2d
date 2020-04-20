@@ -1,6 +1,6 @@
 import socket
-from utilities.serialize import deserialize
-from nodes import NETWORK_COMMAND_TYPES
+from lattice2d.utilities.serialize import deserialize
+from lattice2d.nodes import NETWORK_COMMAND_TYPES
 
 class Network():
 	def __init__(self, add_command):

@@ -1,4 +1,4 @@
-from states import State, StateController
+from lattice2d.states import State, StateController
 
 class TestState1(State):
 	__test__ = False

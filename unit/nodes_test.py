@@ -1,5 +1,5 @@
-from nodes import Node, RootNode, WindowRootNode
-from commands import Command, WINDOW_COMMAND_TYPES
+from lattice2d.nodes import Node, RootNode, WindowRootNode
+from lattice2d.commands import Command, WINDOW_COMMAND_TYPES
 
 class TestNode():
 	def test_passes_to_children_by_default(self, mocker):

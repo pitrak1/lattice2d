@@ -1,5 +1,5 @@
 import pytest
-from utilities.threaded_sync import ThreadedSync
+from lattice2d.utilities.threaded_sync import ThreadedSync
 
 class TestThreadedSync():
 	def test_assertion_fails_when_given_value_less_than_2(self):

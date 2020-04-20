@@ -1,5 +1,5 @@
-from utilities.serialize import serialize, deserialize
-from commands import Command, NetworkCommand
+from lattice2d.utilities.serialize import serialize, deserialize
+from lattice2d.commands import Command, NetworkCommand
 
 class TestSerialize():
 	def test_serializes_and_deserializes_commands(self):

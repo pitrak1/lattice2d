@@ -1,5 +1,5 @@
 import json
-from commands import Command, NetworkCommand
+from lattice2d.commands import Command, NetworkCommand
 
 def serialize(command):
 	if isinstance(command, NetworkCommand):

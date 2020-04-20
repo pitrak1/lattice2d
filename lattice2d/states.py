@@ -1,4 +1,4 @@
-from nodes import Node, RootNode
+from lattice2d.nodes import Node, RootNode
 
 class StateController(RootNode):
 	def __init__(self, starting_state):

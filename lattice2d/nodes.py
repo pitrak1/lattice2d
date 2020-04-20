@@ -1,5 +1,5 @@
-from utilities import threaded_queue
-from commands import Command, WINDOW_COMMAND_TYPES
+from lattice2d.utilities import threaded_queue
+from lattice2d.commands import Command, WINDOW_COMMAND_TYPES
 
 class Node():
 	def __init__(self):
