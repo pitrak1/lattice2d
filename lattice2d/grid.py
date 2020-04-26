@@ -1,7 +1,24 @@
 from lattice2d.nodes import Node
+from lattice2d.config import GRID_WIDTH, GRID_HEIGHT, UP, RIGHT, DOWN, LEFT
+import math
 
-GRID_WIDTH = 10
-GRID_HEIGHT = 10
+def get_distance(start_x, start_y, end_x, end_y):
+	return math.abs(start_x - end_x) + math.abs(start_y - end_y)
+
+def get_direction(start_x, start_y, end_x, end_y):
+	assert distance(start_x, start_y, end_x, end_y) == 1
+
+	if start_y < end_y:
+		return UP
+	elif start_x < end_x:
+		return RIGHT
+	elif start_y > end_y:
+		return DOWN
+	else:
+		return LEFT
+
+def reverse_direction(direction):
+	return (direction + 2) % 4
 
 class Actor(Node):
 	def __init__(self):
@@ -40,7 +57,7 @@ class TileGrid(Node):
 		for i in range(GRID_HEIGHT * GRID_WIDTH):
 			self.children.append(EmptyTile())
 
-	def add_links(self, start_tile, end_tile):
+	def add_adjacent_links(self, start_tile, end_tile):
 		raise NotImplementedError
 
 	def add_tile(self, grid_x, grid_y, tile):
@@ -51,19 +68,19 @@ class TileGrid(Node):
 
 		if grid_y + 1 < GRID_HEIGHT:
 			up_tile = self.children[(grid_y + 1) * GRID_WIDTH + grid_x]
-			self.add_links(tile, up_tile)
+			self.add_adjacent_links(tile, up_tile)
 
 		if grid_x + 1 < GRID_WIDTH:
 			right_tile = self.children[grid_y * GRID_WIDTH + (grid_x + 1)]
-			self.add_links(tile, right_tile)
+			self.add_adjacent_links(tile, right_tile)
 
 		if grid_y - 1 >= 0:
 			down_tile = self.children[(grid_y - 1) * GRID_WIDTH + grid_x]
-			self.add_links(tile, down_tile)
+			self.add_adjacent_links(tile, down_tile)
 
 		if grid_x - 1 >= 0:
 			left_tile = self.children[grid_y * GRID_WIDTH + (grid_x - 1)]
-			self.add_links(tile, left_tile)
+			self.add_adjacent_links(tile, left_tile)
 
 	def add_actor(self, grid_x, grid_y, actor):
 		assert grid_x < 0 or grid_x >= GRID_WIDTH or grid_y < 0 or grid_y >= GRID_HEIGHT

@@ -1,7 +1,20 @@
-from lattice2d.nodes import Node, RootNode, WindowRootNode
-from lattice2d.commands import Command, WINDOW_COMMAND_TYPES
+from lattice2d.nodes import Command, Node, RootNode, WindowRootNode
 
 class TestNode():
+	class ChildNode(Node):
+		def __init__(self):
+			super().__init__()
+			self.called = False
+
+		def some_command_type_handler(self, command):
+			self.called = True
+
+	def test_creates_handler_for_handler_methods(self, mocker):
+		node = self.ChildNode()
+		command = Command('some_command_type', {})
+		node.on_command(command)
+		assert node.called
+
 	def test_passes_to_children_by_default(self, mocker):
 		parent_node = Node()
 
@@ -9,7 +22,7 @@ class TestNode():
 		mocker.patch.object(child_node, 'on_command')
 		parent_node.children.append(child_node)
 
-		command = Command(WINDOW_COMMAND_TYPES[0], {})
+		command = Command('some_command_type', {})
 		parent_node.on_command(command)
 		child_node.on_command.assert_called_once_with(command)
 
@@ -24,7 +37,7 @@ class TestNode():
 		mocker.patch.object(child_node_2, 'on_command', return_value=False)
 		parent_node.children.append(child_node_2)
 
-		command = Command(WINDOW_COMMAND_TYPES[0], {})
+		command = Command('some_command_type', {})
 		assert not parent_node.on_command(command)
 
 	def test_returns_true_if_all_children_return_true_by_default(self, mocker):
@@ -38,7 +51,7 @@ class TestNode():
 		mocker.patch.object(child_node_2, 'on_command', return_value=True)
 		parent_node.children.append(child_node_2)
 
-		command = Command(WINDOW_COMMAND_TYPES[0], {})
+		command = Command('some_command_type', {})
 		assert parent_node.on_command(command)
 
 	def test_calls_on_update_on_children(self, mocker):
@@ -73,17 +86,17 @@ class TestRootNode():
 		mocker.patch.object(child_node_2, 'on_command')
 		root_node.children.append(child_node_2)
 
-		command_1 = Command(WINDOW_COMMAND_TYPES[0], {})
+		command_1 = Command('some_command_type', {})
 		root_node.add_command(command_1)
 
-		command_2 = Command(WINDOW_COMMAND_TYPES[1], {})
+		command_2 = Command('some_other_command_type', {})
 		root_node.add_command(command_2)
 
 		root_node.on_update()
 		assert child_node_1.on_command.call_count == 2
 		assert child_node_2.on_command.call_count == 2
 
-	def test_calls_on_updatefor_every_child(self, mocker):
+	def test_calls_on_update_for_every_child(self, mocker):
 		root_node = RootNode()
 
 		child_node_1 = Node()
@@ -94,10 +107,10 @@ class TestRootNode():
 		mocker.patch.object(child_node_2, 'on_update')
 		root_node.children.append(child_node_2)
 
-		command_1 = Command(WINDOW_COMMAND_TYPES[0], {})
+		command_1 = Command('some_command_type', {})
 		root_node.add_command(command_1)
 
-		command_2 = Command(WINDOW_COMMAND_TYPES[1], {})
+		command_2 = Command('some_other_command_type', {})
 		root_node.add_command(command_2)
 
 		root_node.on_update()
