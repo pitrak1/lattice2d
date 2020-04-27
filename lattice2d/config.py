@@ -9,6 +9,11 @@ class Config(InnerConfig):
         if data:
             self.command_types = data.get('command_types', [])
             self.log_level = data.get('log_level', -1)
+            if data.get('full_solution', False): self.command_types = self.command_types + FULL_COMMAND_TYPES
+
+FULL_COMMAND_TYPES = [
+    'broadcast_players_in_game'
+]
 
 TEST_CONFIG = {
     'command_types': [
@@ -17,6 +22,8 @@ TEST_CONFIG = {
     ],
     'log_level': -1
 }
+
+
 
 
 GRID_WIDTH = 10

@@ -55,72 +55,15 @@ class Network(Node):
 				self.add_command(result)
 
 class Server(Network):
-	def __init__(self, add_command):
-		super().__init__(add_command)
+	def run(self):
 		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.socket.bind(('0.0.0.0', 8080))
 		self.socket.listen(5)
 
-	def run(self):
 		while True:
 			connection, address = self.socket.accept()
 			client_thread = threading.Thread(target=self.receive, args=(connection,), daemon=True)
 			client_thread.start()
-
-class Player(Node):
-	def __init__(self, name, connection, game=None):
-		super().__init__()
-		self.name = name
-		self.connection = connection
-		self.game = game
-
-class Game(RootNode):
-	def __init__(self, name):
-		super().__init__()
-		self.name = name
-		self.players = []
-
-class ServerCore(RootNode):
-	def __init__(self):
-		super().__init__()
-		self.players = []
-		self.server = Server(self.add_command)
-
-	def run(self):
-		self.update_thread = threading.Thread(target=self.__on_update_loop, daemon=True)
-		self.update_thread.start()
-		self.server.run()
-
-	def __on_update_loop(self):
-		while True:
-			self.on_update()
-
-	def add_command(self, command):
-		player = self.find_player_by_connection(command.connection)
-		if player and player.game:
-			log(f'Adding command type {command.type} to game {player.game.name}', LOG_LEVEL_INTERNAL_LOW)
-			player.game.add_command(command)
-		else:
-			log(f'Adding command type {command.type}', LOG_LEVEL_INTERNAL_LOW)
-			self.command_queue.append(command)
-
-	def find_game_by_name(self, game_name):
-		try:
-			return next(game for game in self.children if game.name == game_name)
-		except StopIteration:
-			return False
-
-	def find_player_by_name(self, player_name):
-		try:
-			return next(player for player in self.players if player.name == player_name)
-		except StopIteration:
-			return False
-
-	def find_player_by_connection(self, connection):
-		try:
-			return next(player for player in self.players if player.connection == connection)
-		except StopIteration:
-			return False
 
 class Client(Network):
 	def __init__(self, add_command):

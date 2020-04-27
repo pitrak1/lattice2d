@@ -113,36 +113,6 @@ This class gives the simplest implementation of a threaded, multiclient server a
 
 This class creates a thread to constantly receive.  It is the simplest implementation for a client reading in a new thread.
 
-#### Player Class
-- inherits from Node
-
-This class is just a barebones class to be used for the ServerCore class below.  It has three attributes: `name`, `connection`, and `game`.
-
-#### Game Class
-- inherits from RootNode
-
-This class is just a barebones class to be used for the ServerCore class below.  It has two attributes: `name` and `players`. 
-
-#### ServerCore Class
-- inherits from RootNode
-- method `run`
-	- loops in threads to update and receive
-	- arguments: none
-- method `add_command`
-	- adds command to player's game if it exists, otherwise adds to main queue
-	- arguments: the command to add
-- method `find_game_by_name`
-	- finds game with name in all children, returns False if not found
-	- arguments: the game name to look for
-- method `find_player_by_name`
-	- finds player with name in all children, returns False if not found
-	- arguments: the player name to look for
-- method `find_game_by_connection`
-	- finds player with connection in all children, returns False if not found
-	- arguments: the connection to look for
-
-This class takes a more comprehensive approach to a multithreaded server.  It introduces the concept of Players and Games, whose attributes are in the corresponding classes above.  This allows a command to be added to a Game's queue instead of the main queue if the player sending it has a Game associated with them.  This separation of reponsibilities (the main queue for server-wide requests, the game queues for commands for that game) allows commands to not filter through every single game every time a game state changes.
-
 ### Grid Package (lattice2d.grid)
 #### Actor Class
 - inherits from Node
@@ -188,6 +158,67 @@ This class is the barebones base class for all tiles on the grid, storing actors
 
 This class is meant to be extensible and customizable, providing a generalized base to work from.  Because we do not always want an Actor to be able to move to an adjacent tile, the `add_tile` method calls the `add_adjacent_links` method on every pair of tiles that may potentially need linkage.
 
+### Full Package (lattice2d.full)
+#### FullServer Class
+- inherits from RootNode
+- method `run`
+	- loops in threads to update and receive
+	- arguments: none
+- method `add_command`
+	- adds command to player's game if it exists, otherwise adds to main queue
+	- arguments: the command to add
+- method `create_player`
+	- creates a FullPlayer and adds it to the players list
+	- arguments: the name and connection to use in creation
+- method: `destroy_player_by_connection`
+	- finds the player from the connection, removes them from a game if they are in one, and destroys them
+	- arguments: the connection to find the player from
+- method: `destroy_player_by_name`
+	- finds the player from the name, removes them from a game if they are in one, and destroys them
+	- arguments: the name to find the player from
+- method: `add_player_to_game_by_connection`
+	- adds the player to a game using the player's connection
+	- arguments: the game name and the connection to find the player from
+- method: `add_player_to_game_by_name`
+	- adds the player to a game using the player's name
+	- arguments: the game name and the name to find the player from
+- method: `create_game`
+	- creates a new FullGame and adds it to the children
+	- arguments: the game name to create
+- method: `destroy_game`
+	- finds a game by name and destroys it
+	- arguments: the game name to destroy
+- method `find_game_by_name`
+	- finds game with name in all children, returns False if not found
+	- arguments: the game name to look for
+- method `find_player_by_name`
+	- finds player with name in all children, returns False if not found
+	- arguments: the player name to look for
+- method `find_game_by_connection`
+	- finds player with connection in all children, returns False if not found
+	- arguments: the connection to look for
+
+This class takes a more comprehensive approach to a multithreaded server.  It introduces the concept of FullPlayers and FullGames, whose attributes are in the corresponding classes below.  This allows a command to be added to a FullGame's queue instead of the main queue if the FullPlayer sending it has a FullGame associated with them.  This separation of reponsibilities (the main queue for server-wide requests, the game queues for commands for that game) allows commands to not filter through every single game every time a game state changes.
+
+#### FullGame Class
+- inherits from RootNode
+- method `add_player`
+	- adds the given FullPlayer to the game and sets the game and host references for the player
+	- arguments: the player to add and whether or not they are host
+- method `remove_player`
+	- removes the given FullPlayer from the game; destroys the game if empty; broadcasts players left if not
+	- arguments: the player to remove
+- method `send_players_in_game`
+	- sends a NetworkCommand of type `broadcast_players_in_game` to every player in the game other than the exception
+	- arguments: the player to be excluded from the broadcast
+
+This class is meant to be used in conjunction with the FullServer above, and is meant to make managing players easier.
+
+#### FullPlayer Class
+- inherits from Node
+
+This class is currently very small, only having three attributes: `name`, `connection`, and `game`.
+
 ### Utilities
 The `lattice2d/utilities` folder contains many useful classes and methods that are used elsewhere in this repository and can be used independently.
 
@@ -228,12 +259,14 @@ The configuration for use of this repository is done with a singleton class Conf
 These are currently the configurable elements:
 - command_types: a list of strings for the command types expected by your nodes
 - log_level: the minimum level to receive messages for the logger
+- full_solution: setting this to True adds commands necessary to use the `Full` package
 
 Here is an example:
 ```
 {
 	'command_types': ['mouse_press', 'key_press'],
-	'log_level': LOG_LEVEL_MEDIUM
+	'log_level': LOG_LEVEL_MEDIUM,
+	'full_solution': True
 }
 ```
 
