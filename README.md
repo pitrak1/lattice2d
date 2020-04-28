@@ -48,28 +48,6 @@ This class is meant to be at the top of the hierarchy of Nodes.  This is because
 
 This class simply allows you to use pyglet's `push_handlers` method on an instance of this class to handle common events.  This class has handlers for those event that correspond to handlers for pyglet events, and those handlers add appropriate commands to the queue.
 
-### States package (lattice2d.states)
-#### State Class
-- inherits from Node
-
-A very simple class that has two attributes: `set_state` and `data`.  `set_state` is a callback to store how to change state from the StateController, and `data` is just all other data related to the state.
-
-#### StateController Class
-- inherits from RootNode
-- method `set_state`
-	- changes the state to the given class and data
-	- arguments: the class of the state to change to and the data to use
-
-This class provides the means to hold the state value and change it.
-
-#### WindowStateController Class
-- inherits from WindowRootNode
-- method `set_state`
-	- changes the state to the given class and data
-	- arguments: the class of the state to change to and the data to use
-
-This class does the same thing as StateController class but with a WindowRootNode base.
-
 ### Network package (lattice2d.network)
 #### NetworkCommand Class
 - inherits from Command
