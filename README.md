@@ -43,6 +43,14 @@ The `on_update` and `on_draw` methods are for common game loop functionality.
 
 This class is meant to be at the top of the hierarchy of Nodes.  This is because it has a queue (see the `ThreadedQueue` class in the `Utilities` section for details) of commands that are passed to its children during `on_update`.  
 
+#### RootNodeWithHandlers Class
+- inherits from RootNode
+- method `on_update`
+	- handles all commands in the queue and calls `on_update` on all children; calls `on_command` on self
+	- arguments: the time since last update (optional)
+
+This class is to use if your RootNode class has handlers of its own.  This class simply adds `self` to the children who receive the command during `on_update`.
+
 #### WindowRootNode Class
 - inherits from RootNode
 

@@ -47,6 +47,15 @@ class RootNode(Node):
 			[child.on_command(command) for child in self.children]
 		[child.on_update(dt) for child in self.children]
 
+class RootNodeWithHandlers(RootNode):
+	def on_update(self, dt=None):
+		while self.command_queue.has_elements():
+			command = self.command_queue.popleft()
+			log(f'Handling command type {command.type}', LOG_LEVEL_INTERNAL_LOW)
+			self.on_command(command)
+			[child.on_command(command) for child in self.children]
+		[child.on_update(dt) for child in self.children]
+
 class WindowRootNode(RootNode):
 	def on_key_press(self, symbol, modifiers):
 		self.add_command(Command('key_press', { 'symbol': symbol, 'modifiers': modifiers }))

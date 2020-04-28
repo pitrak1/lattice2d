@@ -1,4 +1,4 @@
-from lattice2d.nodes import Command, Node, RootNode, WindowRootNode
+from lattice2d.nodes import Command, Node, RootNode, RootNodeWithHandlers, WindowRootNode
 
 class TestNode():
 	class ChildNode(Node):
@@ -116,6 +116,15 @@ class TestRootNode():
 		root_node.on_update()
 		child_node_1.on_update.assert_called_once()
 		child_node_2.on_update.assert_called_once()
+
+class TestRootNodeWithHandlers():
+	def test_calls_on_command_on_self(self, mocker):
+		root_node = RootNodeWithHandlers()
+		mocker.patch.object(root_node, 'on_command')
+		command_1 = Command('some_command_type', {})
+		root_node.add_command(command_1)
+		root_node.on_update()
+		root_node.on_command.assert_called_once()
 
 class TestWindowRootNode():
 	def test_adds_command_on_key_press(self, mocker, get_args):
