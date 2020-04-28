@@ -1,5 +1,5 @@
 import pytest
-from lattice2d.full import FullGame, FullPlayer, FullServer
+from lattice2d.full import FullGame, FullPlayer, FullServer, FullPlayerList, FullGameList
 from lattice2d.network import NetworkCommand
 
 class TestFullGame():
@@ -63,9 +63,9 @@ class TestFullServer():
 	class TestAddCommand():
 		def test_adds_to_game_queue_if_player_in_game(self, mocker):
 			server = FullServer()
-			server.create_game('game name')
-			server.create_player('player name', 'connection')
-			server.add_player_to_game_by_connection('game name', 'connection')
+			server.children.append(FullGame('game name', mocker.stub()))
+			server.players.append(FullPlayer('player name', 'connection'))
+			server.children.add_player_to_game('game name', server.players[0])
 			command = NetworkCommand('command_type', {}, 'pending', 'connection')
 			game = next(g for g in server.children if g.name == 'game name')
 			server.add_command(command)
@@ -73,139 +73,112 @@ class TestFullServer():
 
 		def test_adds_to_core_queue_if_player_not_in_game(self, mocker):
 			server = FullServer()
-			server.create_player('player name', 'connection')
+			server.players.append(FullPlayer('player name', 'connection'))
 			command = NetworkCommand('command_type', {}, 'pending', 'connection')
 			server.add_command(command)
 			assert server.command_queue.popleft() == command
 
-	class TestCreatePlayer():
-		def test_creates_player_and_adds_to_players(self, mocker):
-			server = FullServer()
-			server.create_player('player name', 'connection')
-			assert server.players[0].name == 'player name'
+class TestFullPlayerList():
+	class TestAppend():
+		def test_throws_error_if_duplicate_name(self, mocker):
+			player_list = FullPlayerList()
+			player_list.append(FullPlayer('player name', 'connection'))
+			with pytest.raises(AssertionError):
+				player_list.append(FullPlayer('player name', 'connection'))
 
 	class TestDestroyPlayerByConnection():
 		def test_destroys_player(self, mocker):
-			server = FullServer()
-			server.create_player('player name', 'connection')
-			server.destroy_player_by_connection('connection')
-			assert len(server.players) == 0
+			player_list = FullPlayerList()
+			player_list.append(FullPlayer('player name', 'connection'))
+			player_list.destroy_by_connection('connection')
+			assert len(player_list) == 0
 
 		def test_throws_error_if_player_non_existent(self, mocker):
-			server = FullServer()
+			player_list = FullPlayerList()
 			with pytest.raises(AssertionError):
-				server.destroy_player_by_connection('connection')
+				player_list.destroy_by_connection('connection')
 
-	class TestDestroyPlayerByName():
+	class TestDestroyByName():
 		def test_destroys_player(self, mocker):
-			server = FullServer()
-			server.create_player('player name', 'connection')
-			server.destroy_player_by_name('player name')
-			assert len(server.players) == 0
+			player_list = FullPlayerList()
+			player_list.append(FullPlayer('player name', 'connection'))
+			player_list.destroy_by_name('player name')
+			assert len(player_list) == 0
 
 		def test_throws_error_if_player_non_existent(self, mocker):
-			server = FullServer()
+			player_list = FullPlayerList()
 			with pytest.raises(AssertionError):
-				server.destroy_player_by_name('player name')
+				player_list.destroy_by_name('player name')
 
-	class TestAddPlayerToGameByConnection():
+	class TestFindByName():
+		def test_returns_player_if_it_exists(self, mocker):
+			player_list = FullPlayerList()
+			player_list.append(FullPlayer('player name', 'connection'))
+			assert player_list.find_by_name('player name').name == 'player name'
+
+		def test_returns_false_if_it_does_not_exist(self, mocker):
+			player_list = FullPlayerList()
+			assert not player_list.find_by_name('player name')
+
+	class TestFindByConnection():
+		def test_returns_player_if_it_exists(self, mocker):
+			player_list = FullPlayerList()
+			player_list.append(FullPlayer('player name', 'connection'))
+			assert player_list.find_by_connection('connection').name == 'player name'
+
+		def test_returns_false_if_it_does_not_exist(self, mocker):
+			player_list = FullPlayerList()
+			assert not player_list.find_by_connection('connection')
+
+class TestFullGameList():
+	class TestAddPlayerToGame():
 		def test_adds_player(self, mocker):
-			server = FullServer()
-			server.create_player('player name', 'connection')
-			server.create_game('game name')
-			server.add_player_to_game_by_connection('game name', 'connection')
-			assert server.players[0].name == 'player name'
-
-		def test_throws_error_if_player_non_existent(self, mocker):
-			server = FullServer()
-			server.create_game('game name')
-			with pytest.raises(AssertionError):
-				server.add_player_to_game_by_connection('game name', 'connection')
+			game_list = FullGameList()
+			player = FullPlayer('player name', 'connection')
+			game_list.append(FullGame('game name', mocker.stub()))
+			game_list.add_player_to_game('game name', player)
+			assert game_list[0].players[0].name == 'player name'
 
 		def test_throws_error_if_game_non_existent(self, mocker):
-			server = FullServer()
-			server.create_player('player name', 'connection')
+			game_list = FullGameList()
+			player = FullPlayer('player name', 'connection')
 			with pytest.raises(AssertionError):
-				server.add_player_to_game_by_connection('game name', 'connection')
+				game_list.add_player_to_game('game name', player)
 
-	class TestAddPlayerToGameByName():
-		def test_adds_player(self, mocker):
-			server = FullServer()
-			server.create_player('player name', 'connection')
-			server.create_game('game name')
-			server.add_player_to_game_by_name('game name', 'player name')
-			assert server.players[0].name == 'player name'
-
-		def test_throws_error_if_player_non_existent(self, mocker):
-			server = FullServer()
-			server.create_game('game name')
+	class TestAppend():
+		def test_throws_error_if_duplicate_name(self, mocker):
+			game_list = FullGameList()
+			game_list.append(FullGame('game name', mocker.stub()))
 			with pytest.raises(AssertionError):
-				server.add_player_to_game_by_name('game name', 'player name')
-
-		def test_throws_error_if_game_non_existent(self, mocker):
-			server = FullServer()
-			server.create_player('player name', 'connection')
-			with pytest.raises(AssertionError):
-				server.add_player_to_game_by_name('game name', 'player name')
-
-	class TestCreateGame():
-		def test_creates_game(self, mocker):
-			server = FullServer()
-			server.create_game('game name')
-			assert server.children[0].name == 'game name'
-
-		def test_throws_error_if_game_already_exists(self, mocker):
-			server = FullServer()
-			server.create_game('game name')
-			with pytest.raises(AssertionError):
-				server.create_game('game name')
+				game_list.append(FullGame('game name', mocker.stub()))
 
 	class TestDestroyGame():
 		def test_destroys_game(self, mocker):
-			server = FullServer()
-			server.create_game('game name')
-			server.destroy_game('game name')
-			assert len(server.children) == 0
+			game_list = FullGameList()
+			game_list.append(FullGame('game name', mocker.stub()))
+			game_list.destroy('game name')
+			assert len(game_list) == 0
 
 		def test_throws_error_if_game_does_not_exist(self, mocker):
-			server = FullServer()
+			game_list = FullGameList()
 			with pytest.raises(AssertionError):
-				server.destroy_game('game name')
+				game_list.destroy('game name')
 
 		def test_throws_error_if_game_has_players(self, mocker):
-			server = FullServer()
-			server.create_game('game name')
-			server.create_player('player name', 'connection')
-			server.add_player_to_game_by_connection('game name', 'connection')
+			game_list = FullGameList()
+			game_list.append(FullGame('game name', mocker.stub()))
+			player = FullPlayer('player name', 'connection')
+			game_list.add_player_to_game('game name', player)
 			with pytest.raises(AssertionError):
-				server.destroy_game('game name')
+				game_list.destroy('game name')
 
-	class TestFindGameByName():
+	class TestFindByName():
 		def test_returns_game_if_it_exists(self, mocker):
-			server = FullServer()
-			server.create_game('game name')
-			assert server.find_game_by_name('game name').name == 'game name'
+			game_list = FullGameList()
+			game_list.append(FullGame('game name', mocker.stub()))
+			assert game_list.find_by_name('game name').name == 'game name'
 
 		def test_returns_false_if_it_does_not_exist(self, mocker):
-			server = FullServer()
-			assert not server.find_game_by_name('game name')
+			game_list = FullGameList()
+			assert not game_list.find_by_name('game name')
 
-	class TestFindPlayerByName():
-		def test_returns_player_if_it_exists(self, mocker):
-			server = FullServer()
-			server.create_player('player name', 'connection')
-			assert server.find_player_by_name('player name').name == 'player name'
-
-		def test_returns_false_if_it_does_not_exist(self, mocker):
-			server = FullServer()
-			assert not server.find_player_by_name('player name')
-
-	class TestFindPlayerByConnection():
-		def test_returns_player_if_it_exists(self, mocker):
-			server = FullServer()
-			server.create_player('player name', 'connection')
-			assert server.find_player_by_connection('connection').name == 'player name'
-
-		def test_returns_false_if_it_does_not_exist(self, mocker):
-			server = FullServer()
-			assert not server.find_player_by_connection('connection')

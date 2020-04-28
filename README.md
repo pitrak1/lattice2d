@@ -145,38 +145,8 @@ This class is meant to be extensible and customizable, providing a generalized b
 - method `add_command`
 	- adds command to player's game if it exists, otherwise adds to main queue
 	- arguments: the command to add
-- method `create_player`
-	- creates a FullPlayer and adds it to the players list
-	- arguments: the name and connection to use in creation
-- method: `destroy_player_by_connection`
-	- finds the player from the connection, removes them from a game if they are in one, and destroys them
-	- arguments: the connection to find the player from
-- method: `destroy_player_by_name`
-	- finds the player from the name, removes them from a game if they are in one, and destroys them
-	- arguments: the name to find the player from
-- method: `add_player_to_game_by_connection`
-	- adds the player to a game using the player's connection
-	- arguments: the game name and the connection to find the player from
-- method: `add_player_to_game_by_name`
-	- adds the player to a game using the player's name
-	- arguments: the game name and the name to find the player from
-- method: `create_game`
-	- creates a new FullGame and adds it to the children
-	- arguments: the game name to create
-- method: `destroy_game`
-	- finds a game by name and destroys it
-	- arguments: the game name to destroy
-- method `find_game_by_name`
-	- finds game with name in all children, returns False if not found
-	- arguments: the game name to look for
-- method `find_player_by_name`
-	- finds player with name in all children, returns False if not found
-	- arguments: the player name to look for
-- method `find_game_by_connection`
-	- finds player with connection in all children, returns False if not found
-	- arguments: the connection to look for
 
-This class takes a more comprehensive approach to a multithreaded server.  It introduces the concept of FullPlayers and FullGames, whose attributes are in the corresponding classes below.  This allows a command to be added to a FullGame's queue instead of the main queue if the FullPlayer sending it has a FullGame associated with them.  This separation of reponsibilities (the main queue for server-wide requests, the game queues for commands for that game) allows commands to not filter through every single game every time a game state changes.
+This class takes a more comprehensive approach to a multithreaded server.  It introduces the concept of FullPlayers and FullGames, whose attributes are in the corresponding classes below, by using FullPlayerList and FullGameList to track each of these entities.  This class also allows a command to be added to a FullGame's queue instead of the main queue if the FullPlayer sending it has a FullGame associated with them.  This separation of reponsibilities (the main queue for server-wide requests, the game queues for commands for that game) allows commands to not filter through every single game every time a game state changes.
 
 #### FullGame Class
 - inherits from RootNode
@@ -192,10 +162,47 @@ This class takes a more comprehensive approach to a multithreaded server.  It in
 
 This class is meant to be used in conjunction with the FullServer above, and is meant to make managing players easier.
 
+#### FullGameList Class
+- inherits from list
+- method `append`
+	- same as regular append but checks for name uniqueness
+	- arguments: the FullGame to add
+- method `add_player_to_game`
+	- adds a player to a game by name
+	- arguments: the game name to add to, the player to add, and whether the player should be added as host or not
+- method `destroy`
+	- removes a game from the list based on matching game name
+	- arguments: the game name to remove
+- method `find_by_name`
+	- finds a game from the list based on matching name; false if not found
+	- arguments: the name to search for
+
+This class is meant to prevent having big list comprehensions all over the FullGame and FullServer classes.  It just makes FullGames easier to work with by providing common functionality.
+
 #### FullPlayer Class
 - inherits from Node
 
 This class is currently very small, only having three attributes: `name`, `connection`, and `game`.
+
+#### FullPlayerList Class
+- inherits from list
+- method `append`
+	- same as regular append but checks for name uniqueness
+	- arguments: the FullPlayer to add
+- method `destroy_by_connection`
+	- removes a player from the list based on matching connection
+	- arguments: the connection to remove
+- method `destroy_by_name`
+	- removes a player from the list based on matching name
+	- arguments: the name to remove
+- method `find_by_name`
+	- finds a player from the list based on matching name; false if not found
+	- arguments: the name to search for
+- method `find_by_connection`
+	- finds a player from the list based on matching connection; false if not found
+	- arguments: the connection to search for
+
+This class is meant to prevent having big list comprehensions all over the FullGame and FullServer classes.  It just makes FullPlayers easier to work with by providing common functionality.
 
 ### Utilities
 The `lattice2d/utilities` folder contains many useful classes and methods that are used elsewhere in this repository and can be used independently.
