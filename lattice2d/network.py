@@ -3,6 +3,7 @@ import json
 import threading
 from lattice2d.nodes import Node, RootNode, Command
 from lattice2d.utilities.logger import log, LOG_LEVEL_INTERNAL_HIGH
+from lattice2d.config import Config
 
 def serialize(command):
 	if isinstance(command, NetworkCommand):
@@ -57,7 +58,7 @@ class Network(Node):
 class Server(Network):
 	def run(self):
 		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.socket.bind(('0.0.0.0', 8080))
+		self.socket.bind((Config().ip_address, Config().port))
 		self.socket.listen(5)
 
 		while True:
@@ -69,6 +70,6 @@ class Client(Network):
 	def __init__(self, add_command):
 		super().__init__(add_command)
 		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.socket.connect(('0.0.0.0', 8080))
+		self.socket.connect((Config().ip_address, Config().port))
 		self.receive_thread = threading.Thread(target=self.receive, args=(self.socket,), daemon=True)
 		self.receive_thread.start()

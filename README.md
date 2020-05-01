@@ -144,74 +144,6 @@ This class is the barebones base class for all tiles on the grid, storing actors
 
 This class is meant to be extensible and customizable, providing a generalized base to work from.  Because we do not always want an Actor to be able to move to an adjacent tile, the `add_tile` method calls the `add_adjacent_links` method on every pair of tiles that may potentially need linkage.
 
-### Full Package (lattice2d.full)
-#### FullServer Class
-- inherits from RootNode
-- method `run`
-	- loops in threads to update and receive
-	- arguments: none
-- method `add_command`
-	- adds command to player's game if it exists, otherwise adds to main queue
-	- arguments: the command to add
-
-This class takes a more comprehensive approach to a multithreaded server.  It introduces the concept of FullPlayers and FullGames, whose attributes are in the corresponding classes below, by using FullPlayerList and FullGameList to track each of these entities.  This class also allows a command to be added to a FullGame's queue instead of the main queue if the FullPlayer sending it has a FullGame associated with them.  This separation of reponsibilities (the main queue for server-wide requests, the game queues for commands for that game) allows commands to not filter through every single game every time a game state changes.
-
-#### FullGame Class
-- inherits from RootNode
-- method `add_player`
-	- adds the given FullPlayer to the game and sets the game and host references for the player
-	- arguments: the player to add and whether or not they are host
-- method `remove_player`
-	- removes the given FullPlayer from the game; destroys the game if empty; broadcasts players left if not
-	- arguments: the player to remove
-- method `send_players_in_game`
-	- sends a NetworkCommand of type `broadcast_players_in_game` to every player in the game other than the exception
-	- arguments: the player to be excluded from the broadcast
-
-This class is meant to be used in conjunction with the FullServer above, and is meant to make managing players easier.
-
-#### FullGameList Class
-- inherits from list
-- method `append`
-	- same as regular append but checks for name uniqueness
-	- arguments: the FullGame to add
-- method `add_player_to_game`
-	- adds a player to a game by name
-	- arguments: the game name to add to, the player to add, and whether the player should be added as host or not
-- method `destroy`
-	- removes a game from the list based on matching game name
-	- arguments: the game name to remove
-- method `find_by_name`
-	- finds a game from the list based on matching name; false if not found
-	- arguments: the name to search for
-
-This class is meant to prevent having big list comprehensions all over the FullGame and FullServer classes.  It just makes FullGames easier to work with by providing common functionality.
-
-#### FullPlayer Class
-- inherits from Node
-
-This class is currently very small, only having three attributes: `name`, `connection`, and `game`.
-
-#### FullPlayerList Class
-- inherits from list
-- method `append`
-	- same as regular append but checks for name uniqueness
-	- arguments: the FullPlayer to add
-- method `destroy_by_connection`
-	- removes a player from the list based on matching connection
-	- arguments: the connection to remove
-- method `destroy_by_name`
-	- removes a player from the list based on matching name
-	- arguments: the name to remove
-- method `find_by_name`
-	- finds a player from the list based on matching name; false if not found
-	- arguments: the name to search for
-- method `find_by_connection`
-	- finds a player from the list based on matching connection; false if not found
-	- arguments: the connection to search for
-
-This class is meant to prevent having big list comprehensions all over the FullGame and FullServer classes.  It just makes FullPlayers easier to work with by providing common functionality.
-
 ### Utilities
 The `lattice2d/utilities` folder contains many useful classes and methods that are used elsewhere in this repository and can be used independently.
 
@@ -245,21 +177,130 @@ This file contains a deque that requires obtaining a lock to read from and write
 #### ThreadedSync (lattice2d.utilities.threaded_sync)
 This file contains a means to make all clients wait on other clients at a particular point.  This class contains a count set on contruction and protected by a lock on reads and writes, and only once the `count` method is called the number of times specified will the `done` method return true.
 
-## Configuration
 
+## Using the Full Solution
+This is meant to do even more of the baseline heavy lifting for either a local game or a client/server networked game.
+
+Starting the client should be as easy as importing the `run` function from `lattice2d.full.full_client` and calling it, after setting up the additional configuration options (see the `Configuration` section for details).  If you've specified a networked game in the configuration, you'll need to spin up a server as well.  This can be done by importing the `run` function from `lattice2d.full.full_server` and calling it, after setting up your configuration.  The rest of using this solution should be defining behavior for your game by inheriting from these base classes.  For this portion, I'm not going to go over every class, only the ones that I think an external user will need to create a game.
+
+### Client Classes (lattice2d.full.full_client)
+#### FullClientState Class
+- inherits from Node
+- virtual method `redraw`
+	- adds elements to the Renderer to be drawn
+	- arguments: none
+- attribute `set_state`
+	- callback to change the state
+- attribute `add_command`
+	- callback to add a command to the command queue
+- attribute `renderer`
+	- an instance of Renderer() to get the batches and groups from
+
+The client solution allows you to provide a starting class in the configuration and then transition through those classes using the `set_state` callback.  This should be the base class for all the states in your game, or the client of your game if you're using the networked solution.
+
+#### Renderer Class
+- method `get_batch`
+	- returns the batch for the renderer
+	- arguments: none
+- method `get_group`
+	- returns a specific group by its number and creates it if it's not created yet
+	- arguments: the group number of the group to get/create
+
+This class makes managing batches and groups easier.  The only real logic in this class is that groups are only made if they are requested in `get_group`.  That means the number of groups we have are as small as possible.  This class is created in the constructor of `FullClientState` and will also be recreated every time the scene needs to be redrawn (controlled by the `redraw` command).  It would be nice to simply change components and sprites directly instead of scrapping it and readding them, but batched rendering makes this the best solution.
+
+### Server Classes (lattice2d.full.full_server)
+#### FullServer Class
+- inherits from RootNode
+- method `run`
+	- loops in threads to update and receive
+	- arguments: none
+- method `add_command`
+	- adds command to player's game if it exists, otherwise adds to main queue
+	- arguments: the command to add
+
+This class takes a more comprehensive approach to a multithreaded server.  It introduces the concept of FullPlayers and FullGames, whose attributes are in the corresponding classes below, by using FullPlayerList and FullGameList to track each of these entities.  This class also allows a command to be added to a FullGame's queue instead of the main queue if the FullPlayer sending it has a FullGame associated with them.  This separation of reponsibilities (the main queue for server-wide requests, the game queues for commands for that game) allows commands to not filter through every single game every time a game state changes.  You should probably not need to inherit from this, but it helps explain the structure.
+
+#### FullServerGame Class
+- inherits from RootNode
+- method `add_player`
+	- adds the given FullPlayer to the game and sets the game and host references for the player
+	- arguments: the player to add and whether or not they are host
+- method `remove_player`
+	- removes the given FullPlayer from the game; destroys the game if empty; broadcasts players left if not
+	- arguments: the player to remove
+- method `send_players_in_game`
+	- sends a NetworkCommand of type `broadcast_players_in_game` to every player in the game other than the exception
+	- arguments: the player to be excluded from the broadcast
+
+This class is meant to be used in conjunction with the FullServer above, and is meant to make managing players easier.
+
+#### FullServerGameList Class
+- inherits from list
+- method `append`
+	- same as regular append but checks for name uniqueness
+	- arguments: the FullGame to add
+- method `add_player_to_game`
+	- adds a player to a game by name
+	- arguments: the game name to add to, the player to add, and whether the player should be added as host or not
+- method `destroy`
+	- removes a game from the list based on matching game name
+	- arguments: the game name to remove
+- method `find_by_name`
+	- finds a game from the list based on matching name; false if not found
+	- arguments: the name to search for
+
+This class is meant to prevent having big list comprehensions all over the FullServerGame and FullServer classes.  It just makes FullGames easier to work with by providing common functionality.
+
+#### FullServerPlayer Class
+- inherits from Node
+
+This class is currently very small, only having three attributes: `name`, `connection`, and `game`.
+
+#### FullServerPlayerList Class
+- inherits from list
+- method `append`
+	- same as regular append but checks for name uniqueness
+	- arguments: the FullPlayer to add
+- method `destroy_by_connection`
+	- removes a player from the list based on matching connection
+	- arguments: the connection to remove
+- method `destroy_by_name`
+	- removes a player from the list based on matching name
+	- arguments: the name to remove
+- method `find_by_name`
+	- finds a player from the list based on matching name; false if not found
+	- arguments: the name to search for
+- method `find_by_connection`
+	- finds a player from the list based on matching connection; false if not found
+	- arguments: the connection to search for
+
+This class is meant to prevent having big list comprehensions all over the FullServerGame and FullServer classes.  It just makes FullPlayers easier to work with by providing common functionality.
+
+## Configuration
 The configuration for use of this repository is done with a singleton class Config (lattice2d.config).  If an argument is provided to the contructor, configuration values are set (`Config({ 'key', 'value' })`).  If the values just need to be read, the constructor can be called without an argument (`Config().command_types`).  
 
 These are currently the configurable elements:
 - command_types: a list of strings for the command types expected by your nodes
 - log_level: the minimum level to receive messages for the logger
-- full_solution: setting this to True adds commands necessary to use the `Full` package
+- full_solution: adding this object assumes that you are using the packages in the `full` directory
+	- network: this is a boolean value stating whether you're developing a local application or you intend to spin up a server as well.  This will create a threaded network client if this is true.
+	- starting_state: this is the class that will be initialized with no data on application start
+	- group_count: how many different render groups you would like the Renderer to have
+	- window_height
+	- window_width
 
 Here is an example:
 ```
 {
 	'command_types': ['mouse_press', 'key_press'],
 	'log_level': LOG_LEVEL_MEDIUM,
-	'full_solution': True
+	'full_solution': {
+		'network': False,
+		'starting_state': StartingStateClass,
+		'group_count': 6,
+		'window_height': 720,
+		'window_width': 1280
+	}
 }
 ```
 

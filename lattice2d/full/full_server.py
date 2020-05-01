@@ -2,19 +2,16 @@ import threading
 from lattice2d.nodes import Node, RootNode, RootNodeWithHandlers
 from lattice2d.utilities.logger import log, LOG_LEVEL_INTERNAL_HIGH, LOG_LEVEL_INTERNAL_LOW
 from lattice2d.network import Server, NetworkCommand
+from lattice2d.config import Config
 
-FULL_COMMAND_TYPES = [
-	'broadcast_players_in_game'
-]
-
-class FullPlayer(Node):
-	def __init__(self, name, connection, game=None):
+class FullServerPlayer(Node):
+	def __init__(self, name, connection, state=None):
 		super().__init__()
 		self.name = name
 		self.connection = connection
-		self.game = game
+		self.state = state
 
-class FullPlayerList(list):
+class FullServerPlayerList(list):
 	def append(self, item):
 		assert not self.find_by_name(item.name)
 		log(f'Adding {item.name} to player list', LOG_LEVEL_INTERNAL_LOW)
@@ -24,7 +21,7 @@ class FullPlayerList(list):
 		player = self.find_by_connection(connection)
 		assert player
 		log(f'Removing player {player.name} from player list', LOG_LEVEL_INTERNAL_LOW)
-		if player.game: player.game.remove_player(player)
+		if player.state: player.state.remove_player(player)
 		for i in range(len(self)):
 			if self[i].connection == player.connection:
 				del self[i]
@@ -33,7 +30,7 @@ class FullPlayerList(list):
 		player = self.find_by_name(name)
 		assert player
 		log(f'Removing player {player.name} from player list', LOG_LEVEL_INTERNAL_LOW)
-		if player.game: player.game.remove_player(player)
+		if player.state: player.state.remove_player(player)
 		for i in range(len(self)):
 			if self[i].name == player.name:
 				del self[i]
@@ -50,17 +47,19 @@ class FullPlayerList(list):
 		except StopIteration:
 			return False
 
-class FullGame(RootNode):
-	def __init__(self, name, destroy_game):
+class FullServerState(Node):
+	def __init__(self, set_state, add_command, name, destroy_game, players):
 		super().__init__()
+		self.set_state = set_state
+		self.add_command = add_command
 		self.name = name
-		self.players = FullPlayerList()
 		self.destroy_game = destroy_game
+		self.players = players
 
 	def add_player(self, player, host=False):
 		assert player not in self.players
 		log(f'Adding {player.name} to game {self.name}', LOG_LEVEL_INTERNAL_LOW)
-		player.game = self
+		player.state = self
 		player.host = host
 		self.players.append(player)
 		self.send_players_in_game(player)
@@ -68,7 +67,7 @@ class FullGame(RootNode):
 	def remove_player(self, player):
 		assert player in self.players
 		log(f'Removing {player.name} from game {self.name}', LOG_LEVEL_INTERNAL_LOW)
-		player.game = None
+		player.state = None
 		self.players.remove(player)
 		if self.players:
 			self.send_players_in_game()
@@ -86,7 +85,18 @@ class FullGame(RootNode):
 					player.connection
 				)
 
-class FullGameList(list):
+class FullServerGame(RootNode):
+	def __init__(self, name, destroy_game):
+		super().__init__()
+		self.name = name
+		self.current_state = Config().server_starting_state(self.set_state, self.add_command, self.name, destroy_game, FullServerPlayerList())
+		self.children = [self.current_state]
+
+	def set_state(self, state):
+		self.current_state = state
+		self.children = [self.current_state]
+
+class FullServerGameList(list):
 	def append(self, item):
 		assert not self.find_by_name(item.name)
 		log(f'Adding {item.name} to game list', LOG_LEVEL_INTERNAL_LOW)
@@ -96,11 +106,13 @@ class FullGameList(list):
 		game = self.find_by_name(game_name)
 		assert game
 		log(f'Adding {player.name} to game {game_name} in game list', LOG_LEVEL_INTERNAL_LOW)
-		game.add_player(player, host)
+		player.state = game.current_state
+		player.host = host
+		game.current_state.players.append(player)
 
 	def destroy(self, game_name):
 		game = self.find_by_name(game_name)
-		assert game and len(game.players) == 0
+		assert game and len(game.current_state.players) == 0
 		log(f'Removing game {game_name} from game list', LOG_LEVEL_INTERNAL_LOW)
 		for i in range(len(self)):
 			if self[i].name == game.name:
@@ -115,8 +127,8 @@ class FullGameList(list):
 class FullServer(RootNodeWithHandlers):
 	def __init__(self):
 		super().__init__()
-		self.players = FullPlayerList()
-		self.children = FullGameList()
+		self.players = FullServerPlayerList()
+		self.children = FullServerGameList()
 		self.server = Server(self.add_command)
 
 	def run(self):
@@ -126,14 +138,17 @@ class FullServer(RootNodeWithHandlers):
 
 	def __on_update_loop(self):
 		while True:
-			print('test')
 			self.on_update()
 
 	def add_command(self, command):
 		player = self.players.find_by_connection(command.connection)
-		if player and player.game:
-			log(f'Adding command type {command.type} to game {player.game.name}', LOG_LEVEL_INTERNAL_LOW)
-			player.game.add_command(command)
+		if player and player.state:
+			log(f'Adding command type {command.type} to game {player.state.name}', LOG_LEVEL_INTERNAL_LOW)
+			player.state.add_command(command)
 		else:
 			log(f'Adding command type {command.type}', LOG_LEVEL_INTERNAL_LOW)
 			self.command_queue.append(command)
+
+def run():
+	server = FullServer()
+	server.run()

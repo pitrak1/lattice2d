@@ -1,5 +1,18 @@
 import pytest
-from lattice2d.config import Config, TEST_CONFIG
+from lattice2d.config import Config
+from lattice2d.full.full_client import FullClientState
+from lattice2d.full.full_server import FullServerState
+
+TEST_CONFIG = {
+    'command_types': [
+        'some_command_type',
+        'some_other_command_type'
+    ],
+    'full_solution': {
+    	'client_starting_state': FullClientState,
+    	'server_starting_state': FullServerState
+    }
+}
 
 @pytest.fixture
 def get_args():
