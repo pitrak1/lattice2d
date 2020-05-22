@@ -8,23 +8,28 @@ class Config(InnerConfig):
         super().__init__()
         if data:
             self.command_types = data.get('command_types', [])
-            self.log_level = data.get('log_level', -1)
+            self.log_level = data.get('log_level', 0)
             self.ip_address = data.get('ip_address', '0.0.0.0')
             self.port = data.get('port', 8080)
 
-            full_solution = data.get('full_solution')
-            if full_solution:
+            full_solution = data.get('full_solution', False)
+            if full_solution != False:
                 self.command_types = self.command_types + FULL_COMMAND_TYPES
-                self.window_width = full_solution.get('window_width', 1280)
-                self.window_height = full_solution.get('window_height', 720)
-                self.client_starting_state = full_solution['client_starting_state']
-                self.server_starting_state = full_solution.get('server_starting_state', None)
                 self.group_count = full_solution.get('group_count', 6)
                 self.network = full_solution.get('network', False)
+                self.minimum_players = full_solution.get('minimum_players', 2)
 
 FULL_COMMAND_TYPES = [
     'broadcast_players_in_game',
+    'leave_game',
+    'get_current_player',
     'redraw',
+    'destroy_game',
+    'create_player',
+    'create_game',
+    'get_games',
+    'join_game',
+    'logout',
     'activate',
     'close',
     'context_lost',
@@ -54,10 +59,6 @@ TEST_CONFIG = {
         'some_command_type',
         'some_other_command_type'
     ]
-}
-
-BUILT_IN_ASSETS = {
-    'grey_panel': { 'location': 'lattice2d/panels/grey_panel.png', 'type': '9-tile' }
 }
 
 GRID_WIDTH = 10

@@ -1,4 +1,4 @@
-from lattice2d.nodes import Command, Node, RootNode, RootNodeWithHandlers, WindowRootNode
+from lattice2d.nodes import Command, Node, RootNode, RootNodeWithHandlers
 
 class TestNode():
 	class ChildNode(Node):
@@ -125,46 +125,3 @@ class TestRootNodeWithHandlers():
 		root_node.add_command(command_1)
 		root_node.on_update()
 		root_node.on_command.assert_called_once()
-
-class TestWindowRootNode():
-	def test_adds_command_on_key_press(self, mocker, get_args):
-		window_root_node = WindowRootNode()
-		mocker.patch.object(window_root_node, 'add_command')
-		window_root_node.on_key_press('symbol', 'modifiers')
-		assert get_args(window_root_node.add_command, call_number=0, arg_number=0).type == 'key_press'
-
-	def test_adds_command_on_text(self, mocker, get_args):
-		window_root_node = WindowRootNode()
-		mocker.patch.object(window_root_node, 'add_command')
-		window_root_node.on_text('text')
-		assert get_args(window_root_node.add_command, call_number=0, arg_number=0).type == 'text'
-
-	def test_adds_command_on_text_motion(self, mocker, get_args):
-		window_root_node = WindowRootNode()
-		mocker.patch.object(window_root_node, 'add_command')
-		window_root_node.on_text_motion('motion')
-		assert get_args(window_root_node.add_command, call_number=0, arg_number=0).type == 'text_motion'
-
-	def test_adds_command_on_text_motion_select(self, mocker, get_args):
-		window_root_node = WindowRootNode()
-		mocker.patch.object(window_root_node, 'add_command')
-		window_root_node.on_text_motion_select('motion')
-		assert get_args(window_root_node.add_command, call_number=0, arg_number=0).type == 'text_motion_select'
-
-	def test_adds_command_on_mouse_press(self, mocker, get_args):
-		window_root_node = WindowRootNode()
-		mocker.patch.object(window_root_node, 'add_command')
-		window_root_node.on_mouse_press('x', 'y', 'button', 'modifiers')
-		assert get_args(window_root_node.add_command, call_number=0, arg_number=0).type == 'mouse_press'
-
-	def test_adds_command_on_mouse_drag(self, mocker, get_args):
-		window_root_node = WindowRootNode()
-		mocker.patch.object(window_root_node, 'add_command')
-		window_root_node.on_mouse_drag('x', 'y', 'dx', 'dy', 'button', 'modifiers')
-		assert get_args(window_root_node.add_command, call_number=0, arg_number=0).type == 'mouse_drag'
-
-	def test_adds_command_on_mouse_scroll(self, mocker, get_args):
-		window_root_node = WindowRootNode()
-		mocker.patch.object(window_root_node, 'add_command')
-		window_root_node.on_mouse_scroll('x', 'y', 'dx', 'dy')
-		assert get_args(window_root_node.add_command, call_number=0, arg_number=0).type == 'mouse_scroll'

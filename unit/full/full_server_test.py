@@ -6,30 +6,30 @@ class TestFullServerGame():
 	def test_allows_adding_and_removing_players(self, mocker):
 		game = FullServerGame('game name', mocker.stub())
 		player = FullServerPlayer('player name', 'connection')
-		game.current_state.add_player(player)
-		game.current_state.remove_player(player)
-		assert game.current_state.players == []
+		game.add_player(player)
+		game.remove_player(player)
+		assert game.players == []
 
 	def test_does_not_allow_adding_existing_players(self, mocker):
 		game = FullServerGame('game name', mocker.stub())
 		player = FullServerPlayer('player name', 'connection')
-		game.current_state.add_player(player)
+		game.add_player(player)
 		with pytest.raises(AssertionError):
-			game.current_state.add_player(player)
+			game.add_player(player)
 
 	def test_does_not_allow_removing_non_existent_players(self, mocker):
 		game = FullServerGame('game name', mocker.stub())
 		player = FullServerPlayer('player name', 'connection')
 		with pytest.raises(AssertionError):
-			game.current_state.remove_player(player)
+			game.remove_player(player)
 
 	def test_sends_players_to_all_but_added_after_add(self, mocker):
 		game = FullServerGame('game name', mocker.stub())
 		mocker.patch('lattice2d.network.NetworkCommand.create_and_send')
 		player1 = FullServerPlayer('player name 1', 'connection 1')
-		game.current_state.add_player(player1)
+		game.add_player(player1)
 		player2 = FullServerPlayer('player name 2', 'connection 2')
-		game.current_state.add_player(player2)
+		game.add_player(player2)
 		NetworkCommand.create_and_send.assert_called_once_with(
 			'broadcast_players_in_game',
 			{ 'players': [('player name 1', False), ('player name 2', False)] },
@@ -40,18 +40,18 @@ class TestFullServerGame():
 	def test_destroys_game_if_last_player_was_removed(self, mocker):
 		game = FullServerGame('game name', mocker.stub())
 		player = FullServerPlayer('player name', 'connection')
-		game.current_state.add_player(player)
-		game.current_state.remove_player(player)
-		game.current_state.destroy_game.assert_called_once()
+		game.add_player(player)
+		game.remove_player(player)
+		game.destroy_game.assert_called_once()
 
 	def test_sends_players_if_players_remaining_after_removal(self, mocker, get_args):
 		game = FullServerGame('game name', mocker.stub())
 		mocker.patch('lattice2d.network.NetworkCommand.create_and_send')
 		player1 = FullServerPlayer('player name 1', 'connection 1')
-		game.current_state.add_player(player1)
+		game.add_player(player1)
 		player2 = FullServerPlayer('player name 2', 'connection 2')
-		game.current_state.add_player(player2)
-		game.current_state.remove_player(player1)
+		game.add_player(player2)
+		game.remove_player(player1)
 		assert get_args(NetworkCommand.create_and_send, 1) == (
 			'broadcast_players_in_game',
 			{ 'players': [('player name 2', False)] },
@@ -137,7 +137,7 @@ class TestFullServerGameList():
 			player = FullServerPlayer('player name', 'connection')
 			game_list.append(FullServerGame('game name', mocker.stub()))
 			game_list.add_player_to_game('game name', player)
-			assert game_list[0].current_state.players[0].name == 'player name'
+			assert game_list[0].players[0].name == 'player name'
 
 		def test_throws_error_if_game_non_existent(self, mocker):
 			game_list = FullServerGameList()

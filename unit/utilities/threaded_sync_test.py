@@ -2,10 +2,6 @@ import pytest
 from lattice2d.utilities.threaded_sync import ThreadedSync
 
 class TestThreadedSync():
-	def test_assertion_fails_when_given_value_less_than_2(self):
-		with pytest.raises(AssertionError):
-			ThreadedSync(1)
-
 	def test_done_returns_true_on_initialization(self):
 		sync = ThreadedSync(3)
 		assert sync.done()

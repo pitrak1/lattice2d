@@ -1,6 +1,6 @@
 import pyglet
 from lattice2d.config import Config
-from lattice2d.nodes import WindowRootNode, Node
+from lattice2d.nodes import Node, RootNode, Command
 from lattice2d.network import NetworkCommand, Client
 
 class Renderer():
@@ -36,43 +36,82 @@ class FullClientState(Node):
 		self.renderer.get_batch().draw()
 
 class FullClientNetwork(Client):
-	def __init__(self, add_command, get_state):
-		super().__init__(add_command)
-		self.get_state = get_state
-
 	def default_handler(self, command):
 		if isinstance(command, NetworkCommand):
 			if command.status == 'pending':
 				command.update_and_send(connection=self.socket)
 
-class FullClient(WindowRootNode):
+class FullClient(RootNode):
 	def __init__(self):
 		super().__init__()
-		self.current_state = Config().starting_state(self.set_state, self.add_command)
-		if Config().network:
-			self.client_network = ClientCore(self.add_command, self.get_state)
-		self.children = [self.current_state]
-
+		self.network = FullClientNetwork(self.add_command)
+		
 	def set_state(self, state):
 		self.current_state = state
-		self.children = [self.current_state]
+		self.children = [self.current_state, self.network]
 
-	def get_state(self):
-		return self.current_state
+	def on_activate(self):
+		self.add_command(Command('activate'))
 
-def run():
-	window = pyglet.window.Window(Config().window_width, Config().window_height)
+	def on_close(self):
+		self.add_command(Command('close'))
 
-	@window.event
-	def on_draw():
-		window.clear()
-		game.on_draw()
+	def on_context_lost(self):
+		self.add_command(Command('context_lost'))
 
-	@window.event
-	def on_update(dt):
-		game.on_update(dt)
+	def on_context_state_lost(self):
+		self.add_command(Command('context_state_lost'))
 
-	game = FullClient()
-	window.push_handlers(game)
-	pyglet.clock.schedule_interval(on_update, 1 / 120.0)
-	pyglet.app.run()
+	def on_deactivate(self):
+		self.add_command(Command('deactivate'))
+
+	def on_expose(self):
+		self.add_command(Command('expose'))
+
+	def on_hide(self):
+		self.add_command(Command('hide'))
+
+	def on_key_press(self, symbol, modifiers):
+		self.add_command(Command('key_press', { 'symbol': symbol, 'modifiers': modifiers }))
+
+	def on_key_release(self, symbol, modifiers):
+		self.add_command(Command('key_release', { 'symbol': symbol, 'modifiers': modifiers }))
+
+	def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
+		self.add_command(Command('mouse_drag', { 'x': x, 'y': y, 'dx': dx, 'dy': dy, 'buttons': buttons, 'modifiers': modifiers }))
+
+	def on_mouse_enter(self, x, y):
+		self.add_command(Command('mouse_enter', { 'x': x, 'y': y }))
+
+	def on_mouse_leave(self, x, y):
+		self.add_command(Command('mouse_leave', { 'x': x, 'y': y }))
+
+	def on_mouse_motion(self, x, y, dx, dy):
+		self.add_command(Command('mouse_motion', { 'x': x, 'y': y, 'dx': dx, 'dy': dy }))
+
+	def on_mouse_press(self, x, y, button, modifiers):
+		self.add_command(Command('mouse_press', { 'x': x, 'y': y, 'button': button, 'modifiers': modifiers }))
+
+	def on_mouse_release(self, x, y, button, modifiers):
+		self.add_command(Command('mouse_release', { 'x': x, 'y': y, 'button': button, 'modifiers': modifiers }))
+
+	def on_mouse_scroll(self, x, y, dx, dy):
+		self.add_command(Command('mouse_scroll', { 'x': x, 'y': y, 'dx': dx, 'dy': dy }))
+
+	def on_move(self, x, y):
+		self.add_command(Command('move', { 'x': x, 'y': y }))
+
+	def on_resize(self, width, height):
+		self.add_command(Command('resize', { 'width': width, 'height': height }))
+
+	def on_show(self):
+		self.add_command(Command('show'))
+
+	def on_text(self, text):
+		self.add_command(Command('text', { 'text': text }))
+
+	def on_text_motion(self, motion):
+		self.add_command(Command('text_motion', { 'motion': motion }))
+
+	def on_text_motion_select(self, motion):
+		self.add_command(Command('text_motion_select', { 'motion': motion }))

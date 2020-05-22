@@ -281,16 +281,13 @@ The configuration for use of this repository is done with a singleton class Conf
 
 These are currently the configurable elements:
 - command_types: a list of strings for the command types expected by your nodes
-- log_level: the minimum level to receive messages for the logger
-- ip_address: the IP address to network on
-- port: the port to network on
+- log_level: the minimum level to receive messages for the logger (defaults to -1, which displays nothing)
+- ip_address: the IP address to network on (defaults to 0.0.0.0)
+- port: the port to network on (defaults to 8080)
 - full_solution: adding this object assumes that you are using the packages in the `full` directory
-	- network: this is a boolean value stating whether you're developing a local application or you intend to spin up a server as well.  This will create a threaded network client if this is true.
-	- client_starting_state: this is the class that the client will be initialized with
-	- server_starting_state: this is the class that the server will be initialized with
-	- group_count: how many different render groups you would like the Renderer to have
-	- window_height
-	- window_width
+	- network: this is a boolean value stating whether you're developing a local application or you intend to spin up a server as well.  This will create a threaded network client if this is true. (defaults to False)
+	- group_count: how many different render groups you would like the Renderer to have (defaults to 6)
+	- minimum_players: how many players are required to start a game (defaults to 2)
 
 Here is an example:
 ```
@@ -301,11 +298,8 @@ Here is an example:
 	'port': 8080,
 	'full_solution': {
 		'network': False,
-		'client_starting_state': StartingClientStateClass,
-		'server_starting_state': StartingServerStateClass
 		'group_count': 6,
-		'window_height': 720,
-		'window_width': 1280
+		'minimum_players': 2
 	}
 }
 ```

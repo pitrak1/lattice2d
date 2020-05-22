@@ -8,10 +8,7 @@ TEST_CONFIG = {
         'some_command_type',
         'some_other_command_type'
     ],
-    'full_solution': {
-    	'client_starting_state': FullClientState,
-    	'server_starting_state': FullServerState
-    }
+    'full_solution': {}
 }
 
 @pytest.fixture

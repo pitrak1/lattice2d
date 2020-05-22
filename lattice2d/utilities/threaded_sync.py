@@ -2,7 +2,6 @@ import threading
 
 class ThreadedSync():
 	def __init__(self, count_max):
-		assert count_max > 1
 		self.__lock = threading.Lock()
 		self.__count = 0
 		self.__count_max = count_max
