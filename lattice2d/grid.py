@@ -1,5 +1,5 @@
 from lattice2d.nodes import Node
-from lattice2d.config import GRID_WIDTH, GRID_HEIGHT
+from lattice2d.config import GRID_WIDTH, GRID_HEIGHT, GRID_SIZE
 
 UP = 0
 RIGHT = 1
@@ -109,4 +109,40 @@ class TileGrid(Node):
 		self.children[actor.grid_x * self.grid_width + actor.grid_y].remove_actor(actor)
 		self.children[grid_y * self.grid_width + grid_x].add_actor(actor)
 
+class ScaledTile(Tile):
+	def __init__(self, grid_x=None, grid_y=None, base_x=None, base_y=None):
+		super().__init__(grid_x, grid_y)
+		self.base_x = base_x
+		self.base_y = base_y
+		self.base_scale = 1.0
 
+	def adjust_grid_position_handler(self, command):
+		self.base_x = command.data['base_x']
+		self.base_y = command.data['base_y']
+
+	def adjust_grid_scale_handler(self, command):
+		self.base_scale = command.data['base_scale']
+
+	def get_scaled_x_position(self, grid_x, offset_x):
+		return ((grid_x * GRID_SIZE + offset_x) * self.base_scale) + self.base_x
+
+	def get_scaled_y_position(self, grid_y, offset_y):
+		return ((grid_y * GRID_SIZE + offset_y) * self.base_scale) + self.base_y
+
+class ScaledTileGrid(TileGrid):
+	def __init__(self, grid_width, grid_height, base_x=None, base_y=None):
+		super().__init__(grid_width, grid_height)
+		self.base_x = base_x
+		self.base_y = base_y
+		self.base_scale = 1.0
+
+	def adjust_grid_position_handler(self, command):
+		self.base_x += command.data['adjust_x']
+		self.base_y += command.data['adjust_y']
+		command.data.update({ 'base_x': self.base_x, 'base_y': self.base_y })
+		self.default_handler(command)
+
+	def adjust_grid_scale_handler(self, command):
+		self.base_scale = self.base_scale * command.data['adjust']
+		command.data.update({ 'base_scale': self.base_scale })
+		self.default_handler(command)

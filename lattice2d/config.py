@@ -20,6 +20,8 @@ class Config(InnerConfig):
                 self.minimum_players = full_solution.get('minimum_players', 2)
 
 FULL_COMMAND_TYPES = [
+    'adjust_grid_position',
+    'adjust_grid_scale',
     'broadcast_players_in_game',
     'leave_game',
     'get_current_player',
@@ -63,6 +65,7 @@ TEST_CONFIG = {
 
 GRID_WIDTH = 10
 GRID_HEIGHT = 10
+GRID_SIZE = 512
 
 UP = 0
 RIGHT = 1
