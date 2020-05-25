@@ -1,18 +1,12 @@
 from lattice2d.utilities.logger import log, LOG_LEVEL_INTERNAL_HIGH, LOG_LEVEL_INTERNAL_LOW
-from lattice2d.nodes import Node
+from lattice2d.grid import Actor
 
-class FullPlayer(Node):
-	def __init__(self, name, connection, game=None):
+class FullPlayer(Actor):
+	def __init__(self, name, connection=None, game=None):
 		super().__init__()
 		self.name = name
 		self.connection = connection
 		self.game = game
-		self.grid_x = None
-		self.grid_y = None
-
-	def set_position(self, grid_x, grid_y):
-		self.grid_x = grid_x
-		self.grid_y = grid_y
 
 class FullPlayerList(list):
 	def append(self, item):

@@ -102,7 +102,7 @@ This class creates a thread to constantly receive.  It is the simplest implement
 ### Grid Package (lattice2d.grid)
 #### Actor Class
 - inherits from Node
-- method `set_position`
+- method `set_grid_position`
 	- sets the `grid_x` and `grid_y` attributes
 	- arguments: the grid_x and grid_y values to set
 
@@ -110,7 +110,7 @@ This class is barebones right now, but will eventually be the base class for all
 
 #### EmptyTile Class
 - inherits from Node
-- method `set_position`
+- method `set_grid_position`
 	- sets the `grid_x` and `grid_y` attributes
 	- arguments: the grid_x and grid_y values to set
 
