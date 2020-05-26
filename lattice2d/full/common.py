@@ -1,9 +1,9 @@
 from lattice2d.utilities.logger import log, LOG_LEVEL_INTERNAL_HIGH, LOG_LEVEL_INTERNAL_LOW
-from lattice2d.grid import Actor
+from lattice2d.grid import ScaledActor
 
-class FullPlayer(Actor):
-	def __init__(self, name, connection=None, game=None):
-		super().__init__()
+class FullPlayer(ScaledActor):
+	def __init__(self, name, connection=None, game=None, grid_x=None, grid_y=None, base_x=None, base_y=None):
+		super().__init__(grid_x, grid_y, base_x, base_y)
 		self.name = name
 		self.connection = connection
 		self.game = game
