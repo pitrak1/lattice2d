@@ -26,11 +26,11 @@ class TestNode():
 		parent_node.on_command(command)
 		child_node.on_command.assert_called_once_with(command)
 
-	def test_returns_false_if_any_children_return_false_by_default(self, mocker):
+	def test_returns_false_if_all_children_return_false_by_default(self, mocker):
 		parent_node = Node()
 
 		child_node_1 = Node()
-		mocker.patch.object(child_node_1, 'on_command', return_value=True)
+		mocker.patch.object(child_node_1, 'on_command', return_value=False)
 		parent_node.children.append(child_node_1)
 
 		child_node_2 = Node()
@@ -40,7 +40,7 @@ class TestNode():
 		command = Command('some_command_type', {})
 		assert not parent_node.on_command(command)
 
-	def test_returns_true_if_all_children_return_true_by_default(self, mocker):
+	def test_returns_true_if_any_children_return_true_by_default(self, mocker):
 		parent_node = Node()
 
 		child_node_1 = Node()
@@ -48,7 +48,7 @@ class TestNode():
 		parent_node.children.append(child_node_1)
 
 		child_node_2 = Node()
-		mocker.patch.object(child_node_2, 'on_command', return_value=True)
+		mocker.patch.object(child_node_2, 'on_command', return_value=False)
 		parent_node.children.append(child_node_2)
 
 		command = Command('some_command_type', {})

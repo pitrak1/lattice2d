@@ -45,9 +45,6 @@ class EmptyTile(Node):
 		self.grid_x = grid_x
 		self.grid_y = grid_y
 
-	def within_bounds(self, x, y):
-		return within_square_bounds(self.grid_x * GRID_SIZE, self.grid_y * GRID_SIZE, x, y)
-
 class Tile(Node):
 	def __init__(self, grid_x=None, grid_y=None):
 		super().__init__()
@@ -67,9 +64,6 @@ class Tile(Node):
 
 		self.children.remove(actor)
 		actor.set_grid_position(None, None)
-
-	def within_bounds(self, x, y):
-		return within_square_bounds(self.grid_x * GRID_SIZE, self.grid_y * GRID_SIZE, x, y)
 
 class TileGrid(Node):
 	def __init__(self, grid_height, grid_width):

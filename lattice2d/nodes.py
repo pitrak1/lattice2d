@@ -23,7 +23,7 @@ class Node():
 
 	def default_handler(self, command):
 		results = [child.on_command(command) for child in self.children]
-		return all(results)
+		return any(results)
 
 	def on_update(self, dt=None):
 		[child.on_update(dt) for child in self.children]
