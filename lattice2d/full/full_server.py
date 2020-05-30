@@ -11,9 +11,9 @@ class FullServerState(Node):
 		self.game = game
 
 	def broadcast_players_in_game_handler(self, command):
-		try:
+		if 'exception' in command.data.keys():
 			self.game.broadcast_players(command.data['exception'])
-		except KeyError:
+		else:
 			self.game.broadcast_players()
 
 	def leave_game_handler(self, command):

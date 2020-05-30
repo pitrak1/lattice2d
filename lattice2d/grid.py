@@ -1,5 +1,6 @@
 from lattice2d.nodes import Node
 from lattice2d.config import GRID_WIDTH, GRID_HEIGHT, GRID_SIZE
+from lattice2d.utilities.bounds import within_square_bounds
 
 UP = 0
 RIGHT = 1
@@ -44,6 +45,9 @@ class EmptyTile(Node):
 		self.grid_x = grid_x
 		self.grid_y = grid_y
 
+	def within_bounds(self, x, y):
+		return within_square_bounds(self.grid_x * GRID_SIZE, self.grid_y * GRID_SIZE, x, y)
+
 class Tile(Node):
 	def __init__(self, grid_x=None, grid_y=None):
 		super().__init__()
@@ -63,6 +67,9 @@ class Tile(Node):
 
 		self.children.remove(actor)
 		actor.set_grid_position(None, None)
+
+	def within_bounds(self, x, y):
+		return within_square_bounds(self.grid_x * GRID_SIZE, self.grid_y * GRID_SIZE, x, y)
 
 class TileGrid(Node):
 	def __init__(self, grid_height, grid_width):
@@ -168,4 +175,9 @@ class ScaledTileGrid(TileGrid):
 	def adjust_grid_scale_handler(self, command):
 		self.base_scale = self.base_scale * command.data['adjust']
 		command.data.update({ 'base_scale': self.base_scale })
+		self.default_handler(command)
+
+	def mouse_press_handler(self, command):
+		command.data['x'] = (command.data['x'] - self.base_x) // self.base_scale
+		command.data['y'] = (command.data['y'] - self.base_y) // self.base_scale
 		self.default_handler(command)
