@@ -107,7 +107,7 @@ class TileGrid(Node):
 		assert grid_x >= 0 and grid_x < self.grid_width and grid_y >= 0 and grid_y < self.grid_height
 		assert isinstance(self.children[grid_y * self.grid_width + grid_x], Tile)
 
-		self.children[actor.grid_x * self.grid_width + actor.grid_y].remove_actor(actor)
+		self.children[actor.grid_y * self.grid_width + actor.grid_x].remove_actor(actor)
 		self.children[grid_y * self.grid_width + grid_x].add_actor(actor)
 
 class ScaledActor(Actor):
