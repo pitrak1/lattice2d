@@ -25,7 +25,7 @@ def get_direction(start_x, start_y, end_x, end_y):
 def reverse_direction(direction):
 	return (direction + 2) % 4
 
-class Actor(Node):
+class CommonGridEntity(Node):
 	def __init__(self, grid_x=None, grid_y=None):
 		super().__init__()
 		self.grid_x = grid_x
@@ -35,26 +35,13 @@ class Actor(Node):
 		self.grid_x = grid_x
 		self.grid_y = grid_y
 
-class EmptyTile(Node):
-	def __init__(self, grid_x=None, grid_y=None):
-		super().__init__()
-		self.grid_x = grid_x
-		self.grid_y = grid_y
+class Actor(CommonGridEntity):
+	pass
 
-	def set_grid_position(self, grid_x, grid_y):
-		self.grid_x = grid_x
-		self.grid_y = grid_y
+class EmptyTile(CommonGridEntity):
+	pass
 
-class Tile(Node):
-	def __init__(self, grid_x=None, grid_y=None):
-		super().__init__()
-		self.grid_x = grid_x
-		self.grid_y = grid_y
-
-	def set_grid_position(self, grid_x, grid_y):
-		self.grid_x = grid_x
-		self.grid_y = grid_y
-
+class Tile(CommonGridEntity):
 	def add_actor(self, actor):
 		self.children.append(actor)
 		actor.set_grid_position(self.grid_x, self.grid_y)
@@ -64,6 +51,46 @@ class Tile(Node):
 
 		self.children.remove(actor)
 		actor.set_grid_position(None, None)
+
+class CommonScaledGridEntity(CommonGridEntity):
+	def __init__(self, grid_x=None, grid_y=None, base_x=None, base_y=None):
+		super().__init__(grid_x, grid_y)
+		self.base_x = base_x
+		self.base_y = base_y
+		self.base_scale = 1.0
+
+	def adjust_grid_position_handler(self, command):
+		self.base_x = command.data['base_x']
+		self.base_y = command.data['base_y']
+		self.default_handler(command)
+
+	def adjust_grid_scale_handler(self, command):
+		self.base_scale = command.data['base_scale']
+		self.default_handler(command)
+
+	def get_scaled_x_position(self, grid_x, offset_x):
+		return ((grid_x * GRID_SIZE + offset_x) * self.base_scale) + self.base_x
+
+	def get_scaled_y_position(self, grid_y, offset_y):
+		return ((grid_y * GRID_SIZE + offset_y) * self.base_scale) + self.base_y
+
+class ScaledActor(CommonScaledGridEntity):
+	pass
+
+class ScaledEmptyTile(CommonScaledGridEntity):
+	pass
+
+class ScaledTile(CommonScaledGridEntity):
+	def add_actor(self, actor):
+		self.children.append(actor)
+		actor.set_grid_position(self.grid_x, self.grid_y)
+
+	def remove_actor(self, actor):
+		assert actor in self.children
+
+		self.children.remove(actor)
+		actor.set_grid_position(None, None)
+
 
 class TileGrid(Node):
 	def __init__(self, grid_height, grid_width):
@@ -100,58 +127,15 @@ class TileGrid(Node):
 
 	def add_actor(self, grid_x, grid_y, actor):
 		assert grid_x >= 0 and grid_x < self.grid_width and grid_y >= 0 and grid_y < self.grid_height
-		assert isinstance(self.children[grid_y * self.grid_width + grid_x], Tile)
+		assert isinstance(self.children[grid_y * self.grid_width + grid_x], Tile) or isinstance(self.children[grid_y * self.grid_width + grid_x], ScaledTile)
 		self.children[grid_y * self.grid_width + grid_x].add_actor(actor)
 
 	def move_actor(self, grid_x, grid_y, actor):
 		assert grid_x >= 0 and grid_x < self.grid_width and grid_y >= 0 and grid_y < self.grid_height
-		assert isinstance(self.children[grid_y * self.grid_width + grid_x], Tile)
+		assert isinstance(self.children[grid_y * self.grid_width + grid_x], Tile) or isinstance(self.children[grid_y * self.grid_width + grid_x], ScaledTile)
 
 		self.children[actor.grid_y * self.grid_width + actor.grid_x].remove_actor(actor)
 		self.children[grid_y * self.grid_width + grid_x].add_actor(actor)
-
-class ScaledActor(Actor):
-	def __init__(self, grid_x=None, grid_y=None, base_x=None, base_y=None):
-		super().__init__(grid_x, grid_y)
-		self.base_x = base_x
-		self.base_y = base_y
-		self.base_scale = 1.0
-
-	def adjust_grid_position_handler(self, command):
-		self.base_x = command.data['base_x']
-		self.base_y = command.data['base_y']
-
-	def adjust_grid_scale_handler(self, command):
-		self.base_scale = command.data['base_scale']
-
-	def get_scaled_x_position(self, grid_x, offset_x):
-		return ((grid_x * GRID_SIZE + offset_x) * self.base_scale) + self.base_x
-
-	def get_scaled_y_position(self, grid_y, offset_y):
-		return ((grid_y * GRID_SIZE + offset_y) * self.base_scale) + self.base_y
-
-
-class ScaledTile(Tile):
-	def __init__(self, grid_x=None, grid_y=None, base_x=None, base_y=None):
-		super().__init__(grid_x, grid_y)
-		self.base_x = base_x
-		self.base_y = base_y
-		self.base_scale = 1.0
-
-	def adjust_grid_position_handler(self, command):
-		self.base_x = command.data['base_x']
-		self.base_y = command.data['base_y']
-		self.default_handler(command)
-
-	def adjust_grid_scale_handler(self, command):
-		self.base_scale = command.data['base_scale']
-		self.default_handler(command)
-
-	def get_scaled_x_position(self, grid_x, offset_x):
-		return ((grid_x * GRID_SIZE + offset_x) * self.base_scale) + self.base_x
-
-	def get_scaled_y_position(self, grid_y, offset_y):
-		return ((grid_y * GRID_SIZE + offset_y) * self.base_scale) + self.base_y
 
 class ScaledTileGrid(TileGrid):
 	def __init__(self, grid_width, grid_height, base_x=None, base_y=None):
