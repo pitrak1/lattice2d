@@ -1,7 +1,53 @@
 import pytest
-from lattice2d.full.full_server import FullServerGame, FullServer, FullServerGameList
-from lattice2d.full.common import FullPlayer
+from lattice2d.full.full_server import FullServerState, FullServerGame, FullServer, FullServerGameList
+from lattice2d.full.common import FullPlayer, FullPlayerList
 from lattice2d.network import NetworkCommand
+from lattice2d.nodes import Command
+import types
+
+class TestFullServerState():
+	class TestBroadcastPlayersInGameHandler():
+		def test_sends_to_all_if_not_given_exception(self, mocker):
+			game = types.SimpleNamespace()
+			game.broadcast_players = mocker.stub()
+			state = FullServerState(game)
+			command = Command('broadcast_players_in_game')
+			state.on_command(command)
+			game.broadcast_players.assert_called_once()
+
+		def test_sends_to_all_but_exception_if_given_exception(self, mocker):
+			game = types.SimpleNamespace()
+			game.broadcast_players = mocker.stub()
+			state = FullServerState(game)
+			command = Command('broadcast_players_in_game', { 'exception': 'player1' })
+			state.on_command(command)
+			game.broadcast_players.assert_called_once_with('player1')
+
+	class TestGetCurrentPlayerHandler():
+		def test_returns_self_in_player_name_if_current_player(self, mocker, get_args):
+			game = types.SimpleNamespace()
+			game.is_current_player = lambda player : True
+			game.players = FullPlayerList()
+			state = FullServerState(game)
+			command = NetworkCommand('get_current_player')
+			mocker.patch.object(command, 'update_and_send')
+			state.on_command(command)
+			command.update_and_send.assert_called_once()
+			assert command.update_and_send.call_args_list[0][1]['data'] == { 'player_name': 'self' }
+
+		def test_returns_player_name_if_not_current_player(self, mocker, get_args):
+			player = types.SimpleNamespace()
+			player.name = 'player1'
+			game = types.SimpleNamespace()
+			game.is_current_player = lambda p : False
+			game.get_current_player = lambda : player
+			game.players = FullPlayerList()
+			state = FullServerState(game)
+			command = NetworkCommand('get_current_player')
+			mocker.patch.object(command, 'update_and_send')
+			state.on_command(command)
+			command.update_and_send.assert_called_once()
+			assert command.update_and_send.call_args_list[0][1]['data'] == { 'player_name': 'player1' }
 
 class TestFullServerGame():
 	def test_allows_adding_and_removing_players(self, mocker):

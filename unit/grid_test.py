@@ -1,5 +1,6 @@
 import pytest
-from lattice2d.grid import UP, RIGHT, DOWN, LEFT, get_distance, get_direction, reverse_direction, Actor, EmptyTile, Tile, TileGrid
+from lattice2d.grid import UP, RIGHT, DOWN, LEFT, get_distance, get_direction, reverse_direction, CommonGridEntity, Actor, EmptyTile, Tile, CommonScaledGridEntity, TileGrid, ScaledTileGrid
+from lattice2d.nodes import Command
 import types
 
 class TestGetDistance():
@@ -30,27 +31,14 @@ class TestReverseDirection():
 		assert reverse_direction(DOWN) == UP
 		assert reverse_direction(LEFT) == RIGHT
 
-class TestActor():
+class TestCommonGridEntity():
 	def test_allows_setting_grid_position(self):
-		actor = Actor()
-		actor.set_grid_position(1, 2)
-		assert actor.grid_x == 1
-		assert actor.grid_y == 2
-
-class TestEmptyTile():
-	def test_allows_setting_grid_position(self):
-		tile = EmptyTile()
-		tile.set_grid_position(1, 2)
-		assert tile.grid_x == 1
-		assert tile.grid_y == 2
+		grid_entity = CommonGridEntity()
+		grid_entity.set_grid_position(1, 2)
+		assert grid_entity.grid_x == 1
+		assert grid_entity.grid_y == 2
 
 class TestTile():
-	def test_allows_setting_grid_position(self):
-		tile = Tile()
-		tile.set_grid_position(1, 2)
-		assert tile.grid_x == 1
-		assert tile.grid_y == 2
-
 	class TestAddActor():
 		def test_adds_actor_to_children(self):
 			tile = Tile()
@@ -88,6 +76,36 @@ class TestTile():
 			tile.remove_actor(actor)
 			assert actor.grid_x == None
 			assert actor.grid_y == None
+
+class TestCommonScaledGridEntity():
+	class TestAdjustGridPositionHandler():
+		def test_sets_base_position(self):
+			entity = CommonScaledGridEntity()
+			command = Command('adjust_grid_position', { 'base_x': 4, 'base_y': 5 })
+			entity.on_command(command)
+			assert entity.base_x == 4
+			assert entity.base_y == 5
+
+		def test_calls_default_handler(self, mocker):
+			entity = CommonScaledGridEntity()
+			mocker.patch.object(entity, 'default_handler')
+			command = Command('adjust_grid_position', { 'base_x': 4, 'base_y': 5 })
+			entity.on_command(command)
+			entity.default_handler.assert_called_once_with(command)
+
+	class TestAdjustGridScaleHandler():
+		def test_sets_base_scale(self):
+			entity = CommonScaledGridEntity()
+			command = Command('adjust_grid_scale', { 'base_scale': 2 })
+			entity.on_command(command)
+			assert entity.base_scale == 2
+
+		def test_calls_default_handler(self, mocker):
+			entity = CommonScaledGridEntity()
+			mocker.patch.object(entity, 'default_handler')
+			command = Command('adjust_grid_scale', { 'base_scale': 2 })
+			entity.on_command(command)
+			entity.default_handler.assert_called_once_with(command)
 
 class TestTileGrid():
 	def test_initializes_empty_grid(self):
@@ -216,3 +234,45 @@ class TestTileGrid():
 			grid.move_actor(3, 4, actor)
 			end_tile.add_actor.assert_called_once_with(actor)
 
+class TestScaledTileGrid():
+	class TestAdjustGridPositionHandler():
+		def test_adjust_base_position(self):
+			grid = ScaledTileGrid(5, 5)
+			command = Command('adjust_grid_position', { 'adjust_x': 30, 'adjust_y': 40 })
+			grid.on_command(command)
+			assert grid.base_x == 30
+			assert grid.base_y == 40
+
+		def test_updates_the_command_and_sends_to_default_handler(self, mocker, get_args):
+			grid = ScaledTileGrid(5, 5)
+			mocker.patch.object(grid, 'default_handler')
+			command = Command('adjust_grid_position', { 'adjust_x': 30, 'adjust_y': 40 })
+			grid.on_command(command)
+			assert get_args(grid.default_handler, 0, 0).data['base_x'] == 30
+			assert get_args(grid.default_handler, 0, 0).data['base_y'] == 40
+	
+	class TestAdjustGridScaleHandler():
+		def test_adjust_base_scale(self):
+			grid = ScaledTileGrid(5, 5)
+			command = Command('adjust_grid_scale', { 'adjust': 1.5 })
+			grid.on_command(command)
+			assert grid.base_scale == 1.5
+
+		def test_updates_the_command_and_sends_to_default_handler(self, mocker, get_args):
+			grid = ScaledTileGrid(5, 5)
+			mocker.patch.object(grid, 'default_handler')
+			command = Command('adjust_grid_scale', { 'adjust': 1.5 })
+			grid.on_command(command)
+			assert get_args(grid.default_handler, 0, 0).data['base_scale'] == 1.5
+	
+	class TestMousePressHandler():
+		def test_updates_the_command_and_sends_to_default_handler(self, mocker, get_args):
+			grid = ScaledTileGrid(5, 5)
+			grid.base_x = 50
+			grid.base_y = 100
+			grid.base_scale = 0.5
+			mocker.patch.object(grid, 'default_handler')
+			command = Command('mouse_press', { 'x': 150, 'y': 400 })
+			grid.on_command(command)
+			assert get_args(grid.default_handler, 0, 0).data['x'] == 200
+			assert get_args(grid.default_handler, 0, 0).data['y'] == 600

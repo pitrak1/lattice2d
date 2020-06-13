@@ -17,7 +17,7 @@ This very simple class simply has two attributes: `type` and `data`.  `type` is 
 	- calls handler based on command type
 	- arguments: the command to handle
 - method `default_handler`
-	- calls `on_command` on all children, default handler for all command types
+	- calls `on_command` on all children and returns true if any of the children's handlers return true, default handler for all command types
 	- arguments: the command to handle
 - method `on_update`
 	- calls `on_update` on all children
@@ -50,11 +50,6 @@ This class is meant to be at the top of the hierarchy of Nodes.  This is because
 	- arguments: the time since last update (optional)
 
 This class is to use if your RootNode class has handlers of its own.  This class simply adds `self` to the children who receive the command during `on_update`.
-
-#### WindowRootNode Class
-- inherits from RootNode
-
-This class simply allows you to use pyglet's `push_handlers` method on an instance of this class to handle common events.  This class has handlers for those event that correspond to handlers for pyglet events, and those handlers add appropriate commands to the queue.
 
 ### Network package (lattice2d.network)
 #### NetworkCommand Class
@@ -100,24 +95,26 @@ This class gives the simplest implementation of a threaded, multiclient server a
 This class creates a thread to constantly receive.  It is the simplest implementation for a client reading in a new thread.
 
 ### Grid Package (lattice2d.grid)
-#### Actor Class
+#### CommonGridEntity Class
 - inherits from Node
 - method `set_grid_position`
 	- sets the `grid_x` and `grid_y` attributes
 	- arguments: the grid_x and grid_y values to set
+
+This class contains common functionality for setting and storing grid position.
+
+#### Actor Class
+- inherits from CommonGridEntity
 
 This class is barebones right now, but will eventually be the base class for all player characters and non-player characters in the grid.
 
 #### EmptyTile Class
-- inherits from Node
-- method `set_grid_position`
-	- sets the `grid_x` and `grid_y` attributes
-	- arguments: the grid_x and grid_y values to set
+- inherits from CommonGridEntity
 
 This class is barebones right now, but is the stand-in for all tiles on the grid that are empty.
 
 #### Tile Class
-- inherits from EmptyTile
+- inherits from CommonGridEntity
 - method `add_actor`
 	- adds an Actor to this tile
 	- arguments: the Actor to add
@@ -126,6 +123,38 @@ This class is barebones right now, but is the stand-in for all tiles on the grid
 	- arguments: the Actor to remove
 
 This class is the barebones base class for all tiles on the grid, storing actors and other data.
+
+#### CommonScaledGridEntity Class
+- inherits from CommonGridEntity
+- method `adjust_grid_position_handler`
+	- adjusts `base_x` and `base_y` on this object to account for camera movement
+	- arguments: the Command of type `adjust_grid_position`
+- method `adjust_grid_scale_handler`
+	- adjusts `base_scale` on this object to account for camera zoom
+	- arguments: the Command of type `adjust_grid_scale`
+- method `get_scaled_x_position`
+	- translates the grid position to the position in the scene
+	- arguments: the grid position and offset on the x axis
+- method `get_scaled_y_position`
+	- translates the grid position to the position in the scene
+	- arguments: the grid position and offset on the y axis
+
+This class handles all the zooming and moving of the camera in the scene.
+
+#### ScaledActor Class
+- inherits from CommonScaledGridEntity
+
+This class is a scaled version of the Actor class.
+
+#### ScaledEmptyTile Class
+- inherits from CommonScaledGridEntity
+
+This class is a scaled version of the EmptyTile class.
+
+#### ScaledTile Class
+- inherits from CommonScaledGridEntity
+
+This class is a scaled version of the Tile class.
 
 #### TileGrid Class
 - inherits from Node
@@ -143,6 +172,20 @@ This class is the barebones base class for all tiles on the grid, storing actors
 	- arguments: the grid_x and grid_y of the destination tile and the Actor to move
 
 This class is meant to be extensible and customizable, providing a generalized base to work from.  Because we do not always want an Actor to be able to move to an adjacent tile, the `add_tile` method calls the `add_adjacent_links` method on every pair of tiles that may potentially need linkage.
+
+#### ScaledTileGrid Class
+- inherits from TileGrid
+- method `adjust_grid_position_handler`
+	- alters the `base_x` and `base_y` and updates the given command with these values
+	- arguments: the Command to update
+- method `adjust_grid_scale_handler`
+	- alters the `base_scale` and updates the given command with these values
+	- arguments: the Command to update
+- method `mouse_press_handler`
+	- updates a command with the mouse press's x and y values to be scaled and transformed to a point in the scene
+	- arguments: the Command to update
+
+This class is a scaled version of TileGrid.
 
 ### Utilities
 The `lattice2d/utilities` folder contains many useful classes and methods that are used elsewhere in this repository and can be used independently.
@@ -177,11 +220,36 @@ This file contains a deque that requires obtaining a lock to read from and write
 #### ThreadedSync (lattice2d.utilities.threaded_sync)
 This file contains a means to make all clients wait on other clients at a particular point.  This class contains a count set on contruction and protected by a lock on reads and writes, and only once the `count` method is called the number of times specified will the `done` method return true.
 
-
 ## Using the Full Solution
 This is meant to do even more of the baseline heavy lifting for either a local game or a client/server networked game.
 
 Starting the client should be as easy as importing the `run` function from `lattice2d.full.full_client` and calling it, after setting up the additional configuration options (see the `Configuration` section for details).  If you've specified a networked game in the configuration, you'll need to spin up a server as well.  This can be done by importing the `run` function from `lattice2d.full.full_server` and calling it, after setting up your configuration.  The rest of using this solution should be defining behavior for your game by inheriting from these base classes.  For this portion, I'm not going to go over every class, only the ones that I think an external user will need to create a game.
+
+### Common Classes (lattice2d.full.common)
+#### FullPlayer Class
+- inherits from ScaledActor
+
+This class is currently very small, only having three attributes: `name`, `connection`, and `game`.
+
+#### FullPlayerList Class
+- inherits from list
+- method `append`
+	- same as regular append but checks for name uniqueness
+	- arguments: the FullPlayer to add
+- method `destroy_by_connection`
+	- removes a player from the list based on matching connection
+	- arguments: the connection to remove
+- method `destroy_by_name`
+	- removes a player from the list based on matching name
+	- arguments: the name to remove
+- method `find_by_name`
+	- finds a player from the list based on matching name; false if not found
+	- arguments: the name to search for
+- method `find_by_connection`
+	- finds a player from the list based on matching connection; false if not found
+	- arguments: the connection to search for
+
+This class is meant to prevent having big list comprehensions all over the FullServerGame and FullServer classes.  It just makes FullPlayers easier to work with by providing common functionality.
 
 ### Client Classes (lattice2d.full.full_client)
 #### FullClientState Class
@@ -210,25 +278,52 @@ This class makes managing batches and groups easier.  The only real logic in thi
 
 ### Server Classes (lattice2d.full.full_server)
 #### FullServer Class
-- inherits from RootNode
+- inherits from RootNodeWithHandlers
 - method `run`
 	- loops in threads to update and receive
 	- arguments: none
 - method `add_command`
 	- adds command to player's game if it exists, otherwise adds to main queue
 	- arguments: the command to add
+- method `destroy_game_handler`
+	- destroys a game by name
+	- arguments: the command with the game name to destroy
+- method `create_player_handler`
+	- creates a player from name and connection
+	- arguments: the command with the player info
+- method `create_game_handler`
+	- creates a game from name
+	- arguments: the command with the game name
+- method `get_games_handler`
+	- gets the number of players and game name of all games
+	- arguments: the command to update and send back
+- method `join_game_handler`
+	- adds the requesting player to a game by name
+	- arguments: the command from the player with the game name
+- method `logout_handler`
+	- destroys a player by connection
+	- arguments: the command from the player
 
-This class takes a more comprehensive approach to a multithreaded server.  It introduces the concept of FullPlayers and FullGames, whose attributes are in the corresponding classes below, by using FullPlayerList and FullGameList to track each of these entities.  This class also allows a command to be added to a FullGame's queue instead of the main queue if the FullPlayer sending it has a FullGame associated with them.  This separation of reponsibilities (the main queue for server-wide requests, the game queues for commands for that game) allows commands to not filter through every single game every time a game state changes.  You should probably not need to inherit from this, but it helps explain the structure.
+This class takes a more comprehensive approach to a multithreaded server.  It introduces the concept of FullServerGames, whose attributes are in the corresponding class below, by using FullPlayerList and FullServerGameList to track each of the respective entities.  This class also allows a command to be added to a FullServerGame's queue instead of the main queue if the FullPlayer sending it has a FullServerGame associated with them.  This separation of reponsibilities (the main queue for server-wide requests, the game queues for commands for that game) allows commands to not filter through every single game every time a game state changes.  You should probably not need to inherit from this, but it helps explain the structure.
 
 #### FullServerGame Class
 - inherits from RootNode
+- method `set_state`
+	- sets the state to the given state
+	- arguments: the state to set
+- method `get_current_player`
+	- returns the player whose turn it is
+	- arguments: none
+- method `is_current_player`
+	- returns true if it is the given player's turn
+	- arguments: the player to check
 - method `add_player`
 	- adds the given FullPlayer to the game and sets the game and host references for the player
 	- arguments: the player to add and whether or not they are host
 - method `remove_player`
 	- removes the given FullPlayer from the game; destroys the game if empty; broadcasts players left if not
 	- arguments: the player to remove
-- method `send_players_in_game`
+- method `broadcast_players`
 	- sends a NetworkCommand of type `broadcast_players_in_game` to every player in the game other than the exception
 	- arguments: the player to be excluded from the broadcast
 
@@ -238,7 +333,7 @@ This class is meant to be used in conjunction with the FullServer above, and is 
 - inherits from list
 - method `append`
 	- same as regular append but checks for name uniqueness
-	- arguments: the FullGame to add
+	- arguments: the FullServerGame to add
 - method `add_player_to_game`
 	- adds a player to a game by name
 	- arguments: the game name to add to, the player to add, and whether the player should be added as host or not
@@ -251,30 +346,19 @@ This class is meant to be used in conjunction with the FullServer above, and is 
 
 This class is meant to prevent having big list comprehensions all over the FullServerGame and FullServer classes.  It just makes FullGames easier to work with by providing common functionality.
 
-#### FullServerPlayer Class
+#### FullServerState Class
 - inherits from Node
+- method `broadcast_players_in_game_handler`
+	- sends a given command to all the players in the game
+	- arguments: the command to send
+- method `leave_game_handler`
+	- removes the player from the game by connection
+	- arguments: the command from the player to remove
+- method `get_current_player_handler`
+	- sends back `self` if requesting player is current player, otherwise send back player name
+	- arguments: the command to update and return
 
-This class is currently very small, only having three attributes: `name`, `connection`, and `game`.
-
-#### FullServerPlayerList Class
-- inherits from list
-- method `append`
-	- same as regular append but checks for name uniqueness
-	- arguments: the FullPlayer to add
-- method `destroy_by_connection`
-	- removes a player from the list based on matching connection
-	- arguments: the connection to remove
-- method `destroy_by_name`
-	- removes a player from the list based on matching name
-	- arguments: the name to remove
-- method `find_by_name`
-	- finds a player from the list based on matching name; false if not found
-	- arguments: the name to search for
-- method `find_by_connection`
-	- finds a player from the list based on matching connection; false if not found
-	- arguments: the connection to search for
-
-This class is meant to prevent having big list comprehensions all over the FullServerGame and FullServer classes.  It just makes FullPlayers easier to work with by providing common functionality.
+This class hopefully covers the bases for player and game management that FullServer didn't cover.
 
 ## Configuration
 The configuration for use of this repository is done with a singleton class Config (lattice2d.config).  If an argument is provided to the contructor, configuration values are set (`Config({ 'key', 'value' })`).  If the values just need to be read, the constructor can be called without an argument (`Config().command_types`).  

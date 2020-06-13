@@ -41,7 +41,7 @@ class Actor(CommonGridEntity):
 class EmptyTile(CommonGridEntity):
 	pass
 
-class Tile(CommonGridEntity):
+class CommonTile():
 	def add_actor(self, actor):
 		self.children.append(actor)
 		actor.set_grid_position(self.grid_x, self.grid_y)
@@ -51,6 +51,9 @@ class Tile(CommonGridEntity):
 
 		self.children.remove(actor)
 		actor.set_grid_position(None, None)
+
+class Tile(CommonGridEntity, CommonTile):
+	pass
 
 class CommonScaledGridEntity(CommonGridEntity):
 	def __init__(self, grid_x=None, grid_y=None, base_x=None, base_y=None):
@@ -80,17 +83,8 @@ class ScaledActor(CommonScaledGridEntity):
 class ScaledEmptyTile(CommonScaledGridEntity):
 	pass
 
-class ScaledTile(CommonScaledGridEntity):
-	def add_actor(self, actor):
-		self.children.append(actor)
-		actor.set_grid_position(self.grid_x, self.grid_y)
-
-	def remove_actor(self, actor):
-		assert actor in self.children
-
-		self.children.remove(actor)
-		actor.set_grid_position(None, None)
-
+class ScaledTile(CommonScaledGridEntity, CommonTile):
+	pass
 
 class TileGrid(Node):
 	def __init__(self, grid_height, grid_width):
@@ -138,7 +132,7 @@ class TileGrid(Node):
 		self.children[grid_y * self.grid_width + grid_x].add_actor(actor)
 
 class ScaledTileGrid(TileGrid):
-	def __init__(self, grid_width, grid_height, base_x=None, base_y=None):
+	def __init__(self, grid_width, grid_height, base_x=0, base_y=0):
 		super().__init__(grid_width, grid_height)
 		self.base_x = base_x
 		self.base_y = base_y
