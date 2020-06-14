@@ -24,7 +24,7 @@ class TestFullServerState():
 			game.broadcast_players.assert_called_once_with('player1')
 
 	class TestGetCurrentPlayerHandler():
-		def test_returns_self_in_player_name_if_current_player(self, mocker, get_args):
+		def test_returns_self_in_player_name_if_current_player(self, mocker, get_keyword_args):
 			game = types.SimpleNamespace()
 			game.is_current_player = lambda player : True
 			game.players = FullPlayerList()
@@ -33,9 +33,9 @@ class TestFullServerState():
 			mocker.patch.object(command, 'update_and_send')
 			state.on_command(command)
 			command.update_and_send.assert_called_once()
-			assert command.update_and_send.call_args_list[0][1]['data'] == { 'player_name': 'self' }
+			assert get_keyword_args(command.update_and_send, 0, 'data') == { 'player_name': 'self' }
 
-		def test_returns_player_name_if_not_current_player(self, mocker, get_args):
+		def test_returns_player_name_if_not_current_player(self, mocker, get_keyword_args):
 			player = types.SimpleNamespace()
 			player.name = 'player1'
 			game = types.SimpleNamespace()
@@ -47,7 +47,7 @@ class TestFullServerState():
 			mocker.patch.object(command, 'update_and_send')
 			state.on_command(command)
 			command.update_and_send.assert_called_once()
-			assert command.update_and_send.call_args_list[0][1]['data'] == { 'player_name': 'player1' }
+			assert get_keyword_args(command.update_and_send, 0, 'data') == { 'player_name': 'player1' }
 
 class TestFullServerGame():
 	def test_allows_adding_and_removing_players(self, mocker):
@@ -91,7 +91,7 @@ class TestFullServerGame():
 		game.remove_player(player)
 		game.destroy_game.assert_called_once()
 
-	def test_sends_players_if_players_remaining_after_removal(self, mocker, get_args):
+	def test_sends_players_if_players_remaining_after_removal(self, mocker, get_positional_args):
 		game = FullServerGame('game name', mocker.stub())
 		mocker.patch('lattice2d.network.NetworkCommand.create_and_send')
 		player1 = FullPlayer('player name 1', 'connection 1')
@@ -99,7 +99,7 @@ class TestFullServerGame():
 		player2 = FullPlayer('player name 2', 'connection 2')
 		game.add_player(player2)
 		game.remove_player(player1)
-		assert get_args(NetworkCommand.create_and_send, 1) == (
+		assert get_positional_args(NetworkCommand.create_and_send, 1) == (
 			'broadcast_players_in_game',
 			{ 'players': [('player name 2', False)] },
 			'success',

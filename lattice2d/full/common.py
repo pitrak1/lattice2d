@@ -2,8 +2,8 @@ from lattice2d.utilities.logger import log, LOG_LEVEL_INTERNAL_HIGH, LOG_LEVEL_I
 from lattice2d.grid import ScaledActor
 
 class FullPlayer(ScaledActor):
-	def __init__(self, name, connection=None, game=None, grid_x=None, grid_y=None, base_x=None, base_y=None):
-		super().__init__(grid_x, grid_y, base_x, base_y)
+	def __init__(self, name, connection=None, game=None, grid_position=(None, None), base_position=(0, 0)):
+		super().__init__(grid_position, base_position)
 		self.name = name
 		self.connection = connection
 		self.game = game
