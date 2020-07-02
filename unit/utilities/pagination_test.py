@@ -1,4 +1,4 @@
-from lattice2d.utilities.pagination import get_page_info
+from utilities.pagination import get_page_info
 
 class TestPagination():
 	def test_returns_correct_data_on_first_page(self):

@@ -1,4 +1,4 @@
-from lattice2d.utilities.bounds import within_circle_bounds, within_square_bounds, within_rect_bounds
+from utilities.bounds import within_circle_bounds, within_square_bounds, within_rect_bounds
 
 class TestBounds():
 	class TestWithinCircleBounds():

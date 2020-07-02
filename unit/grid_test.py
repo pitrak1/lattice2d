@@ -1,6 +1,6 @@
 import pytest
-from lattice2d.grid import UP, RIGHT, DOWN, LEFT, get_distance, get_direction, reverse_direction, CommonGridEntity, Actor, EmptyTile, Tile, CommonScaledGridEntity, TileGrid, ScaledTileGrid
-from lattice2d.nodes import Command
+from grid import UP, RIGHT, DOWN, LEFT, get_distance, get_direction, reverse_direction, CommonGridEntity, Actor, EmptyTile, Tile, CommonScaledGridEntity, TileGrid, ScaledTileGrid
+from nodes import Command
 import types
 
 class TestGetDistance():

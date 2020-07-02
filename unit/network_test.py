@@ -1,5 +1,5 @@
-from lattice2d.network import NetworkCommand, serialize, deserialize
-from lattice2d.nodes import Command
+from network import NetworkCommand, serialize, deserialize
+from nodes import Command
 import types
 
 class TestSerializeDeserialize():

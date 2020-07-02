@@ -1,8 +1,8 @@
 import pytest
-from lattice2d.full.full_server import FullServerState, FullServerGame, FullServer, FullServerGameList
-from lattice2d.full.common import FullPlayer, FullPlayerList
-from lattice2d.network import NetworkCommand
-from lattice2d.nodes import Command
+from full.full_server import FullServerState, FullServerGame, FullServer, FullServerGameList
+from full.common import FullPlayer, FullPlayerList
+from network import NetworkCommand
+from nodes import Command
 import types
 
 class TestFullServerState():

@@ -1,5 +1,5 @@
 from lattice2d.nodes import Node
-from lattice2d.config import GRID_WIDTH, GRID_HEIGHT, GRID_SIZE
+from lattice2d.config import Config
 from lattice2d.utilities.bounds import within_square_bounds
 
 UP = 0
@@ -68,10 +68,10 @@ class CommonScaledGridEntity(CommonGridEntity):
 		self.default_handler(command)
 
 	def get_scaled_x_position(self, grid_x, offset_x):
-		return ((grid_x * GRID_SIZE + offset_x) * self.base_scale) + self.base_position[0]
+		return ((grid_x * Config()['grid']['size'] + offset_x) * self.base_scale) + self.base_position[0]
 
 	def get_scaled_y_position(self, grid_y, offset_y):
-		return ((grid_y * GRID_SIZE + offset_y) * self.base_scale) + self.base_position[1]
+		return ((grid_y * Config()['grid']['size'] + offset_y) * self.base_scale) + self.base_position[1]
 
 class ScaledActor(CommonScaledGridEntity):
 	pass

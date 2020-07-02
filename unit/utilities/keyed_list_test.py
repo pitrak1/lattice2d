@@ -1,5 +1,7 @@
 import pytest
+import types
 from lattice2d.utilities.keyed_list import KeyedList
+
 
 class TestKeyedList():
 	class TestAddingAndRetreiving():
@@ -25,6 +27,19 @@ class TestKeyedList():
 			keyed_list.insert_with_key(0, 2345, 'test')
 			assert keyed_list == [2345, 1234]
 			assert keyed_list.find('test') == 2345
+
+		def test_finds_by_attribute(self):
+			entry_1 = types.SimpleNamespace()
+			entry_1.fake_attr = 'test1'
+
+			entry_2 = types.SimpleNamespace()
+			entry_2.fake_attr = 'test2'
+
+			entry_3 = types.SimpleNamespace()
+			entry_3.fake_attr = 'test3'
+
+			keyed_list = KeyedList([entry_1, entry_2, entry_3])
+			assert keyed_list.find_by_attribute('fake_attr', 'test2') == entry_2
 
 	class TestSettingAndClearing():
 		def test_initializes_from_list(self):

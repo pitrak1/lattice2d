@@ -398,4 +398,11 @@ In order to install this package locally, it needs to be built and then installe
 
 The following command creates a built package as a compressed file: `python3 setup.py sdist`
 
-After the build, this package can be installed locally using the following command: `pip3 install --user dist/lattice2d-0.0.1.tar.gz`.  Note the version on the compressed file may be different depending on the settings in `setup.py`.
+After the build, this package can be installed locally using the following command: `pip3 install --user dist/lattice2d-0.0.1.tar.gz`.  
+
+```
+python3 setup.py sdist
+pip3 install --user dist/lattice2d-0.0.1.tar.gz
+```
+
+Note the version on the compressed file may be different depending on the settings in `setup.py`.

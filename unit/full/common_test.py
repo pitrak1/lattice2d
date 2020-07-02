@@ -1,5 +1,5 @@
 import pytest
-from lattice2d.full.common import FullPlayerList, FullPlayer
+from full.common import FullPlayerList, FullPlayer
 
 class TestFullPlayerList():
 	class TestAppend():

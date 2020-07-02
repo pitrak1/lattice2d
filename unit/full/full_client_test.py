@@ -1,6 +1,6 @@
 import pytest
 import pyglet
-from lattice2d.full.full_client import Renderer
+from full.full_client import Renderer
 
 class TestRenderer():
 	def test_creates_a_batch(self, mocker):

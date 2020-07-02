@@ -1,6 +1,6 @@
 import types
 import pytest
-from lattice2d.nodes import Command, ChildList, Node, RootNode, RootNodeWithHandlers
+from nodes import Command, ChildList, Node, RootNode, RootNodeWithHandlers
 
 class TestChildList():
 	class TestOnCommand():

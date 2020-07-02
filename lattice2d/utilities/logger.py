@@ -7,7 +7,7 @@ LOG_LEVEL_INTERNAL_HIGH = 3
 LOG_LEVEL_INTERNAL_LOW = 4
 
 def log(value, log_level):
-	if log_level <= Config().log_level:
+	if log_level <= Config()['log_level']:
 		print_value = ''
 		for i in range(log_level):
 			print_value += '\t'

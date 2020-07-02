@@ -1,5 +1,5 @@
 import pytest
-from lattice2d.utilities.threaded_queue import ThreadedQueue
+from utilities.threaded_queue import ThreadedQueue
 
 class TestThreadedQueue():
 	def test_has_no_elements_on_initialization(self):

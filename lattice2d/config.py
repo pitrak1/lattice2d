@@ -7,17 +7,11 @@ class Config(InnerConfig):
     def __init__(self, data=None):
         super().__init__()
         if data:
-            self.command_types = data.get('command_types', [])
-            self.log_level = data.get('log_level', 0)
-            self.ip_address = data.get('ip_address', '0.0.0.0')
-            self.port = data.get('port', 8080)
+            self.data = data
+            self.data['command_types'] = self.data['command_types'] + FULL_COMMAND_TYPES
 
-            full_solution = data.get('full_solution', False)
-            if full_solution != False:
-                self.command_types = self.command_types + FULL_COMMAND_TYPES
-                self.group_count = full_solution.get('group_count', 6)
-                self.network = full_solution.get('network', False)
-                self.minimum_players = full_solution.get('minimum_players', 2)
+    def __getitem__(self, key):
+        return self.data[key]
 
 FULL_COMMAND_TYPES = [
     'adjust_grid_position',
@@ -62,10 +56,6 @@ TEST_CONFIG = {
         'some_other_command_type'
     ]
 }
-
-GRID_WIDTH = 10
-GRID_HEIGHT = 10
-GRID_SIZE = 512
 
 UP = 0
 RIGHT = 1
