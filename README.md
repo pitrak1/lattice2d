@@ -6,50 +6,13 @@ Conceptually, the hierarchy structure works by expecting a set number of command
 
 The networking functionality creates special game_objects that inherit from the base class from the command-based hierarchy structure while adding specific network and threading functionality to make creating a game client or game server easier.  Additionally, it creates a new command class that inherits from the command class used in the hierarchy structure while adding attributes to make networking easier.
 
-The functionality will be documented in each package below.
+## Guides to Use
 
-### Node package (lattice2d.nodes)
-#### Command Class
-This very simple class simply has two attributes: `type` and `data`.  `type` is a string representing what kind of data to expect, and `data` is a dictionary containing data for the command.  `type` should only be set to a command type configured by the `Config` package.
+## Package Functionality
 
-#### Node Class
-- method `on_command`
-	- calls handler based on command type
-	- arguments: the command to handle
-- method `default_handler`
-	- calls `on_command` on all children and returns true if any of the children's handlers return true, default handler for all command types
-	- arguments: the command to handle
-- method `on_update`
-	- calls `on_update` on all children
-	- arguments: the time since last update (optional)
-- method `on_draw`
-	- calls `on_draw` on all children
-	- arguments: none
-- attribute `children`
-	- a list of children nodes
+Additional documentation for each package is the `README.md` files in each subdirectory.
 
-This class allows for (hopefully) transparent handling of commands.  The `on_command` method will handle all configured command types (see Configuration section for details) with the `default_handler` method which simply calls `on_command` on all children.  Handlers for specific command types can be created in subclasses and will be called instead of `default handler` if named according to the type of the command they are handling (for instance, commands with type `mouse_press` would be automatically handled by the method called `mouse_press_handler` that takes the command as its only argument).
 
-The `on_update` and `on_draw` methods are for common game loop functionality.
-
-#### RootNode Class
-- inherits from Node
-- method `add_command`
-	- adds a command to the queue
-	- arguments: the command to add
-- method `on_update`
-	- handles all commands in the queue and calls `on_update` on all children
-	- arguments: the time since last update (optional)
-
-This class is meant to be at the top of the hierarchy of Nodes.  This is because it has a queue (see the `ThreadedQueue` class in the `Utilities` section for details) of commands that are passed to its children during `on_update`.  
-
-#### RootNodeWithHandlers Class
-- inherits from RootNode
-- method `on_update`
-	- handles all commands in the queue and calls `on_update` on all children; calls `on_command` on self
-	- arguments: the time since last update (optional)
-
-This class is to use if your RootNode class has handlers of its own.  This class simply adds `self` to the children who receive the command during `on_update`.
 
 ### Network package (lattice2d.network)
 #### NetworkCommand Class
@@ -95,37 +58,11 @@ This class gives the simplest implementation of a threaded, multiclient server a
 This class creates a thread to constantly receive.  It is the simplest implementation for a client reading in a new thread.
 
 ### Grid Package (lattice2d.grid)
-#### CommonGridEntity Class
+#### GridEntity Class
 - inherits from Node
 - method `set_grid_position`
 	- sets the `grid_x` and `grid_y` attributes
 	- arguments: the grid_x and grid_y values to set
-
-This class contains common functionality for setting and storing grid position.
-
-#### Actor Class
-- inherits from CommonGridEntity
-
-This class is barebones right now, but will eventually be the base class for all player characters and non-player characters in the grid.
-
-#### EmptyTile Class
-- inherits from CommonGridEntity
-
-This class is barebones right now, but is the stand-in for all tiles on the grid that are empty.
-
-#### Tile Class
-- inherits from CommonGridEntity
-- method `add_actor`
-	- adds an Actor to this tile
-	- arguments: the Actor to add
-- method `remove_actor`
-	- removes an Actor from this tile
-	- arguments: the Actor to remove
-
-This class is the barebones base class for all tiles on the grid, storing actors and other data.
-
-#### CommonScaledGridEntity Class
-- inherits from CommonGridEntity
 - method `adjust_grid_position_handler`
 	- adjusts `base_x` and `base_y` on this object to account for camera movement
 	- arguments: the Command of type `adjust_grid_position`
@@ -139,22 +76,28 @@ This class is the barebones base class for all tiles on the grid, storing actors
 	- translates the grid position to the position in the scene
 	- arguments: the grid position and offset on the y axis
 
-This class handles all the zooming and moving of the camera in the scene.
+This class contains common functionality for setting and storing grid position in addition to scaling and panning camera functionality.
 
-#### ScaledActor Class
-- inherits from CommonScaledGridEntity
+#### Actor Class
+- inherits from GridEntity
 
-This class is a scaled version of the Actor class.
+This class is barebones right now, but will eventually be the base class for all player characters and non-player characters in the grid.
 
-#### ScaledEmptyTile Class
-- inherits from CommonScaledGridEntity
+#### EmptyTile Class
+- inherits from GridEntity
 
-This class is a scaled version of the EmptyTile class.
+This class is barebones right now, but is the stand-in for all tiles on the grid that are empty.
 
-#### ScaledTile Class
-- inherits from CommonScaledGridEntity
+#### Tile Class
+- inherits from GridEntity
+- method `add_actor`
+	- adds an Actor to this tile
+	- arguments: the Actor to add
+- method `remove_actor`
+	- removes an Actor from this tile
+	- arguments: the Actor to remove
 
-This class is a scaled version of the Tile class.
+This class is the barebones base class for all tiles on the grid, storing actors and other data.
 
 #### TileGrid Class
 - inherits from Node
@@ -170,11 +113,6 @@ This class is a scaled version of the Tile class.
 - method `move_actor`
 	- removes an Actor from one tile and adds it to another
 	- arguments: the grid_x and grid_y of the destination tile and the Actor to move
-
-This class is meant to be extensible and customizable, providing a generalized base to work from.  Because we do not always want an Actor to be able to move to an adjacent tile, the `add_tile` method calls the `add_adjacent_links` method on every pair of tiles that may potentially need linkage.
-
-#### ScaledTileGrid Class
-- inherits from TileGrid
 - method `adjust_grid_position_handler`
 	- alters the `base_x` and `base_y` and updates the given command with these values
 	- arguments: the Command to update
@@ -185,20 +123,21 @@ This class is meant to be extensible and customizable, providing a generalized b
 	- updates a command with the mouse press's x and y values to be scaled and transformed to a point in the scene
 	- arguments: the Command to update
 
-This class is a scaled version of TileGrid.
+This class is meant to be extensible and customizable, providing a generalized base to work from.  Because we do not always want an Actor to be able to move to an adjacent tile, the `add_tile` method calls the `add_adjacent_links` method on every pair of tiles that may potentially need linkage.  This also contains functionality to be able to scale and pan the entire grid.
 
-### Utilities
-The `lattice2d/utilities` folder contains many useful classes and methods that are used elsewhere in this repository and can be used independently.
+### Utilities (lattice2d.utilities)
 
-#### Bounds (lattice2d.utilities.bounds)
-This file contains functions to determine whether a point is in a shape.
+This package contains many different useful classes and functions, which will be grouped and described below.
+
+#### Bounds
+These functions determine whether a point is in a shape.
 
 - within_circle_bounds: determines whether a point is within a circle
 - within_rect_bounds: determines whether a point is within a rectangle
 - within_square_bounds: determines whether a point is within a square
 
-#### Logger (lattice2d.utilities.logger)
-This file contains a useful logger with color coding, indentation, and a customizable log level.
+#### Logger
+This is a useful logger with color coding, indentation, and a customizable log level.
 
 The log levels are as follows:
 - LOG_LEVEL_HIGH
@@ -209,16 +148,16 @@ The log levels are as follows:
 
 The level can be configured (see the Configuration section for details), and setting a level will print messages on that level and above.  For instance, setting the level to `LOG_LEVEL_LOW` will read all messages logged at that level as well as `LOG_LEVEL_MEDIUM` and `LOG_LEVEL_HIGH`.  Log level for a particular message needs to be set each time a message is sent (for example: `log('some message', LOG_LEVEL_MEDIUM))`)
 
-#### Pagination (lattice2d.utilities.pagination)
-This file contains a single function `get_page_info` that returns the indices of the elements and indications whether paging forward or backward is possible, given the current page, the size of each page, and the total count of elements.
+#### Pagination
+This package contains a single function `get_page_info` that returns the indices of the elements and indications whether paging forward or backward is possible, given the current page, the size of each page, and the total count of elements.
 
 Example: `[3, 5, False, True] = get_page_info(1, 3, 6)`
 
-#### ThreadedQueue (lattice2d.utilities.threaded_queue)
-This file contains a deque that requires obtaining a lock to read from and write to.  This class also provides deque functionality used by the classes in this repository (`has_elements`, `popleft`, and `append`).
+#### ThreadedQueue
+This package contains a deque that requires obtaining a lock to read from and write to.  This class also provides deque functionality used by the classes in this repository (`has_elements`, `popleft`, and `append`).
 
-#### ThreadedSync (lattice2d.utilities.threaded_sync)
-This file contains a means to make all clients wait on other clients at a particular point.  This class contains a count set on contruction and protected by a lock on reads and writes, and only once the `count` method is called the number of times specified will the `done` method return true.
+#### ThreadedSync
+This package contains a means to make all clients wait on other clients at a particular point.  This class contains a count set on contruction and protected by a lock on reads and writes, and only once the `count` method is called the number of times specified will the `done` method return true.
 
 ## Using the Full Solution
 This is meant to do even more of the baseline heavy lifting for either a local game or a client/server networked game.

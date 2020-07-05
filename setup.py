@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="lattice2d",
-    version="0.0.1",
+    version="1.0.0",
     author="Nick Pitrak",
     author_email="pitrak1@gmail.com",
     description="A package for boilerplate code for a grid based game",

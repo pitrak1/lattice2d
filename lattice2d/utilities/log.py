@@ -1,5 +1,3 @@
-from lattice2d.config import Config
-
 LOG_LEVEL_HIGH = 0
 LOG_LEVEL_MEDIUM = 1
 LOG_LEVEL_LOW = 2
