@@ -1,14 +1,41 @@
 import pytest
+import os
+from lattice2d.definitions import ROOT_DIR
 from lattice2d.config import Config
-from lattice2d.full.full_client import FullClientState
-from lattice2d.full.full_server import FullServerState
 
 TEST_CONFIG = {
-    'command_types': [
-        'some_command_type',
-        'some_other_command_type'
-    ],
-    'full_solution': {}
+	'window_dimensions': (100, 100),
+	'log_level': 3,
+	'network': {
+		'ip_address': '0.0.0.0',
+		'port': 8080
+	},
+	'group_count': 2,
+	'grid': {
+		'width': 2,
+		'height': 2,
+		'size': 100
+	},
+	'command_types': [],
+	'client_states': {},
+	'server_states': {},
+	'assets': {
+		'path': os.path.join(ROOT_DIR, 'assets'),
+		'tiles': [],
+		'characters': {
+			'test_character': {
+				'display_name': 'Test Character',
+				'location': 'test.jpg',
+				'type': 'single'
+			}
+		},
+		'custom': {
+			'test_custom': {
+				'location': 'test.jpg',
+				'type': 'single'
+			}
+		}
+	}
 }
 
 @pytest.fixture
@@ -30,5 +57,5 @@ def get_keyword_args():
 	return _get_keyword_args
 
 @pytest.fixture(autouse=True)
-def set_command_types():
+def set_config():
 	config = Config(TEST_CONFIG)

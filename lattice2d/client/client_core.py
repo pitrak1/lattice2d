@@ -17,7 +17,6 @@ class ClientCore(WindowRootNode):
 		self.__current_state = state(self.add_command, custom_data)
 
 		state_data = next(s for s in Config()['client_states']['states'] if s['state'] == state)
-		self.transitions = {}
 		for key, value in state_data['transitions'].items():
 			transition = ClientTransition(self, key, value)			
 			setattr(self.__current_state, key, transition.run)

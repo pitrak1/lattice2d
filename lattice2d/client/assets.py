@@ -4,23 +4,39 @@ from lattice2d.config import Config
 from lattice2d.definitions import ROOT_DIR
 
 COMMON = {
-	'rooms': {
-		'location': 'rooms.jpg',
-		'type': 'grid',
-		'rows': 9,
-		'columns': 8
+	'test_jpg': {
+		'location': 'test.jpg',
+		'type': 'single'
 	},
-	'room_gif': {
-		'location': 'rooms.gif',
+	'test_png': {
+		'location': 'test.png',
+		'type': 'single'
+	},
+	'test_gif': {
+		'location': 'test.gif',
 		'type': 'gif'
 	},
-	'rooms_single': {
-		'location': 'rooms.jpg',
+	'test_single': {
+		'location': 'test.jpg',
+		'type': 'single'
+	},
+	'test_grid': {
+		'location': 'test.jpg',
+		'type': 'grid',
+		'rows': 9,
+		'columns': 8	
+	},
+	'test_common': {
+		'location': 'test.jpg',
 		'type': 'single'
 	}
 }
 
 UI = {
+	'test_ui': {
+		'location': 'test.jpg',
+		'type': 'single'
+	},
 	'grey_panel': {
 		'location': 'grey_panel.png',
 		'type': 'grid',
