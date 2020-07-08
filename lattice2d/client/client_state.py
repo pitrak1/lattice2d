@@ -7,14 +7,12 @@ class ClientState(Node):
 		self.add_command = add_command
 		self.custom_data = custom_data
 		self.renderer = Renderer()
-		self.redraw()
 
 	def redraw(self):
 		raise NotImplementedError
 
 	def client_redraw_handler(self, command):
-		self.renderer = Renderer()
-		self.redraw()
+		self.renderer.refresh()
 
 	def on_draw(self):
-		self.renderer.get_batch().draw()
+		self.renderer.draw()
