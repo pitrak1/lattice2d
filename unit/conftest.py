@@ -2,7 +2,6 @@ import pytest
 import os
 from lattice2d.definitions import ROOT_DIR
 from lattice2d.config import Config
-from unit.client.client_state_test import FakeClientState
 
 TEST_CONFIG = {
 	'window_dimensions': (100, 100),
@@ -18,15 +17,7 @@ TEST_CONFIG = {
 		'size': 100
 	},
 	'command_types': [],
-	'client_states': {
-		'starting_state': FakeClientState,
-		'states': [
-			{
-				'state': FakeClientState,
-				'transitions': {}
-			}
-		]
-	},
+	'client_states': {},
 	'server_states': {},
 	'assets': {
 		'path': os.path.join(ROOT_DIR, 'assets'),
