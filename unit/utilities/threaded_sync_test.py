@@ -1,5 +1,5 @@
 import pytest
-from utilities.threaded_sync import ThreadedSync
+from lattice2d.utilities.threaded_sync import ThreadedSync
 
 class TestThreadedSync():
 	def test_done_returns_true_on_initialization(self):

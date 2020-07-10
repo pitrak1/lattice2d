@@ -1,5 +1,5 @@
 from lattice2d.nodes.root_node import RootNode
-from lattice2d.utilities.logger import log, LOG_LEVEL_INTERNAL_LOW
+from lattice2d.utilities.log import log, LOG_LEVEL_INTERNAL_LOW
 
 class RootNodeWithHandlers(RootNode):
 	def on_update(self, dt=None):

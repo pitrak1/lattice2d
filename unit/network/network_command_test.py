@@ -1,6 +1,6 @@
-from network import NetworkCommand, serialize, deserialize
-from nodes import Command
 import types
+from lattice2d.network.network_command import NetworkCommand, serialize, deserialize
+from lattice2d.nodes.command import Command
 
 class TestSerializeDeserialize():
 	def test_serializes_and_deserializes_commands(self):
@@ -87,4 +87,3 @@ class TestNetworkCommand():
 		assert command.status == 'status'
 		assert command.data == { 'key1': True }
 		connection.send.assert_called_once_with(serialize(command).encode())
-

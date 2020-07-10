@@ -1,107 +1,9 @@
 import pytest
-from grid import UP, RIGHT, DOWN, LEFT, get_distance, get_direction, reverse_direction, CommonGridEntity, Actor, EmptyTile, Tile, CommonScaledGridEntity, TileGrid, ScaledTileGrid
-from nodes import Command
-import types
-
-class TestGetDistance():
-	def test_returns_distance_if_zero(self):
-		assert get_distance((1, 1), (1, 1)) == 0
-
-	def test_returns_distance_if_one(self):
-		assert get_distance((2, 2), (1, 2)) == 1
-
-	def test_returns_distance_if_more_than_one(self):
-		assert get_distance((0, 0), (-3, -4)) == 7
-
-class TestGetDirection():
-	def test_throws_error_if_distance_is_not_one(self):
-		with pytest.raises(AssertionError):
-			get_direction((0, 0), (2, 0))
-
-	def test_returns_direction(self):
-		assert get_direction((1, 1), (1, 2)) == UP
-		assert get_direction((-1, -2), (0, -2)) == RIGHT
-		assert get_direction((0, 0), (0, -1)) == DOWN
-		assert get_direction((2, 3), (1, 3)) == LEFT
-
-class TestReverseDirection():
-	def test_returns_the_opposite_of_the_given_direction(self):
-		assert reverse_direction(UP) == DOWN
-		assert reverse_direction(RIGHT) == LEFT
-		assert reverse_direction(DOWN) == UP
-		assert reverse_direction(LEFT) == RIGHT
-
-class TestCommonGridEntity():
-	def test_allows_setting_grid_position(self):
-		grid_entity = CommonGridEntity()
-		grid_entity.set_grid_position((1, 2))
-		assert grid_entity.grid_position == (1, 2)
-
-class TestTile():
-	class TestAddActor():
-		def test_adds_actor_to_children(self):
-			tile = Tile()
-			actor = Actor()
-			tile.add_actor(actor)
-			assert tile.children == [actor]
-
-		def test_sets_grid_position_of_actor(self):
-			tile = Tile()
-			tile.set_grid_position((1, 2))
-			actor = Actor()
-			tile.add_actor(actor)
-			assert actor.grid_position == (1, 2)
-
-	class TestRemoveActor():
-		def test_throws_error_if_actor_is_not_in_children(self):
-			tile = Tile()
-			actor = Actor()
-			with pytest.raises(AssertionError):
-				tile.remove_actor(actor)
-
-		def test_removes_actor_from_children(self):
-			tile = Tile()
-			actor = Actor()
-			tile.add_actor(actor)
-			tile.remove_actor(actor)
-			assert len(actor.children) == 0
-
-		def test_clears_actor_grid_position(self):
-			tile = Tile()
-			tile.set_grid_position((1, 2))
-			actor = Actor()
-			tile.add_actor(actor)
-			tile.remove_actor(actor)
-			assert actor.grid_position == (None, None)
-
-class TestCommonScaledGridEntity():
-	class TestAdjustGridPositionHandler():
-		def test_sets_base_position(self):
-			entity = CommonScaledGridEntity()
-			command = Command('adjust_grid_position', { 'base_position': (4, 5) })
-			entity.on_command(command)
-			assert entity.base_position == (4, 5)
-
-		def test_calls_default_handler(self, mocker):
-			entity = CommonScaledGridEntity()
-			mocker.patch.object(entity, 'default_handler')
-			command = Command('adjust_grid_position', { 'base_position': (4, 5) })
-			entity.on_command(command)
-			entity.default_handler.assert_called_once_with(command)
-
-	class TestAdjustGridScaleHandler():
-		def test_sets_base_scale(self):
-			entity = CommonScaledGridEntity()
-			command = Command('adjust_grid_scale', { 'base_scale': 2 })
-			entity.on_command(command)
-			assert entity.base_scale == 2
-
-		def test_calls_default_handler(self, mocker):
-			entity = CommonScaledGridEntity()
-			mocker.patch.object(entity, 'default_handler')
-			command = Command('adjust_grid_scale', { 'base_scale': 2 })
-			entity.on_command(command)
-			entity.default_handler.assert_called_once_with(command)
+from lattice2d.grid.tile_grid import TileGrid
+from lattice2d.grid.tile import Tile
+from lattice2d.grid.actor import Actor
+from lattice2d.grid.empty_tile import EmptyTile
+from lattice2d.nodes.command import Command
 
 class TestTileGrid():
 	def test_initializes_empty_grid(self):
@@ -229,16 +131,15 @@ class TestTileGrid():
 			grid.move_actor((3, 4), actor)
 			end_tile.add_actor.assert_called_once_with(actor)
 
-class TestScaledTileGrid():
 	class TestAdjustGridPositionHandler():
 		def test_adjust_base_position(self):
-			grid = ScaledTileGrid((5, 5))
+			grid = TileGrid((5, 5))
 			command = Command('adjust_grid_position', { 'adjust': (30, 40) })
 			grid.on_command(command)
 			assert grid.base_position == (30, 40)
 
 		def test_updates_the_command_and_sends_to_default_handler(self, mocker, get_positional_args):
-			grid = ScaledTileGrid((5, 5))
+			grid = TileGrid((5, 5))
 			mocker.patch.object(grid, 'default_handler')
 			command = Command('adjust_grid_position', { 'adjust': (30, 40) })
 			grid.on_command(command)
@@ -246,13 +147,13 @@ class TestScaledTileGrid():
 	
 	class TestAdjustGridScaleHandler():
 		def test_adjust_base_scale(self):
-			grid = ScaledTileGrid((5, 5))
+			grid = TileGrid((5, 5))
 			command = Command('adjust_grid_scale', { 'adjust': 1.5 })
 			grid.on_command(command)
 			assert grid.base_scale == 1.5
 
 		def test_updates_the_command_and_sends_to_default_handler(self, mocker, get_positional_args):
-			grid = ScaledTileGrid((5, 5))
+			grid = TileGrid((5, 5))
 			mocker.patch.object(grid, 'default_handler')
 			command = Command('adjust_grid_scale', { 'adjust': 1.5 })
 			grid.on_command(command)
@@ -260,7 +161,7 @@ class TestScaledTileGrid():
 	
 	class TestMousePressHandler():
 		def test_updates_the_command_and_sends_to_default_handler(self, mocker, get_positional_args):
-			grid = ScaledTileGrid((5, 5))
+			grid = TileGrid((5, 5))
 			grid.base_position = (50, 100)
 			grid.base_scale = 0.5
 			mocker.patch.object(grid, 'default_handler')

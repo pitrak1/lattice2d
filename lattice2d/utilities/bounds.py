@@ -1,3 +1,5 @@
+import math
+
 def within_circle_bounds(start_position, end_position, radius):
 	distance = math.sqrt(((start_position[0] - end_position[0]) ** 2) + ((start_position[1] - end_position[1]) ** 2 ))
 	return distance < radius

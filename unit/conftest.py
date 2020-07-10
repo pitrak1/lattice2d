@@ -16,7 +16,7 @@ TEST_CONFIG = {
 		'height': 2,
 		'size': 100
 	},
-	'command_types': [],
+	'command_types': ['test_command'],
 	'client_states': {},
 	'server_states': {},
 	'assets': {

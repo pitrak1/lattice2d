@@ -1,6 +1,6 @@
 from lattice2d.utilities.threaded_queue import ThreadedQueue
 from lattice2d.nodes.node import Node
-from lattice2d.utilities.logger import log, LOG_LEVEL_INTERNAL_LOW
+from lattice2d.utilities.log import log, LOG_LEVEL_INTERNAL_LOW
 
 class RootNode(Node):
 	def __init__(self):
