@@ -1,7 +1,7 @@
-from lattice2d.nodes import Node
+from lattice2d.nodes.node import Node
 
 class ServerState(Node):
-	def __init__(self, game, custom_data):
+	def __init__(self, game, custom_data={}):
 		super().__init__()
 		self.game = game
 		self.custom_data = custom_data
