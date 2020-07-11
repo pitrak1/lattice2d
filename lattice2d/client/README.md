@@ -1,5 +1,5 @@
 # Client (lattice2d.client)
-## ClientCore Class (lattice2d.client_client_core)
+## ClientCore Class (lattice2d.client.client_core)
 - inherits from WindowRootNode
 - method `set_state`
 	- sets the state and populates transitions to future states
