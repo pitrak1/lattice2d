@@ -1,4 +1,5 @@
 from lattice2d.nodes.root_node import RootNode
+from lattice2d.nodes.command import Command
 
 class WindowRootNode(RootNode):
 	def on_activate(self):

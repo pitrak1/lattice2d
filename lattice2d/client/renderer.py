@@ -6,11 +6,14 @@ class Renderer():
 		self.refresh()
 
 	def add(self, component):
-		component.batch = self.batch
+		component.set_batch(self.batch)
 		self.components.append(component)
 
 	def draw(self):
 		self.batch.draw()
+
+	def get_batch(self):
+		return self.batch
 
 	def refresh(self):
 		self.batch = pyglet.graphics.Batch()
