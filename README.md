@@ -141,7 +141,7 @@ After the build, this package can be installed locally using the following comma
 
 ```
 python3 setup.py sdist
-pip3 install --user dist/lattice2d-0.0.1.tar.gz
+pip3 install --user dist/lattice2d-1.0.0.tar.gz
 ```
 
 Note the version on the compressed file may be different depending on the settings in `setup.py`.
