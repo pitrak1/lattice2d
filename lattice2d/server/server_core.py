@@ -2,6 +2,7 @@ import threading
 from lattice2d.nodes.root_node_with_handlers import RootNodeWithHandlers
 from lattice2d.utilities.log import log, LOG_LEVEL_INTERNAL_LOW
 from lattice2d.network.server import Server
+from lattice2d.server.server_game import ServerGame
 from lattice2d.config import Config
 from lattice2d.grid.player import Player
 
@@ -32,7 +33,7 @@ class ServerCore(RootNodeWithHandlers):
 		self.destroy_game(game_name)
 
 	def create_player_handler(self, command):
-		self.players.append(FullPlayer(command.data['player_name'], command.connection))
+		self.players.append(Player(command.data['player_name'], command.connection))
 		command.update_and_send(status='success')
 
 	def create_game_handler(self, command):

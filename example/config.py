@@ -3,25 +3,32 @@ import copy
 from definitions import ROOT_DIR
 from constants import CONSTANTS
 from client.client_component_state import ClientComponentState
-from server.server_component_state import ServerComponentState
+from client.client_network_state import ClientNetworkState
+from server.server_network_state import ServerNetworkState
 
 CONFIG = copy.deepcopy(CONSTANTS)
 CONFIG.update({
-	'command_types': [],
+	'command_types': ['some_network_command'],
 	'client_states': {
 		'starting_state': ClientComponentState,
 		'states': [
 			{
 				'state': ClientComponentState,
+				'transitions': {
+					'to_network_state': ClientNetworkState
+				}
+			},
+			{
+				'state': ClientNetworkState,
 				'transitions': {}
 			}
 		]
 	},
 	'server_states': {
-		'starting_state': ServerComponentState,
+		'starting_state': ServerNetworkState,
 		'states': [
 			{
-				'state': ServerComponentState,
+				'state': ServerNetworkState,
 				'transitions': {}
 			}
 		]

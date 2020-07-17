@@ -1,5 +1,6 @@
 from lattice2d.nodes.node import Node
 from lattice2d.network.network_command import deserialize
+from lattice2d.utilities.log import log, LOG_LEVEL_INTERNAL_HIGH
 
 class Network(Node):
 	def __init__(self, add_command):

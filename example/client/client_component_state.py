@@ -84,7 +84,7 @@ class ClientComponentState(ClientState):
 			Button(
 				position=(WINDOW_CENTER[0], 80),
 				unit_dimensions=(8, 3),
-				text='Continue', 
+				text='Continue to Next State', 
 				on_click=self.next_state,
 				batch=self.renderer.get_batch(),
 				area_group=self.renderer.get_group(1),
@@ -100,5 +100,4 @@ class ClientComponentState(ClientState):
 		self.text_box.set_error_text(message)
 
 	def next_state(self):
-		print('next_state')
-
+		self.to_network_state()
