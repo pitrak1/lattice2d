@@ -7,12 +7,14 @@ class TestRenderer():
 	class TestAdd():
 		def test_sets_batch_for_the_component(self, mocker):
 			component = types.SimpleNamespace()
+			component.set_batch = mocker.stub()
 			renderer = Renderer()
 			renderer.add(component)
-			assert component.batch, renderer.batch
+			component.set_batch.assert_called_once_with(renderer.batch)
 
 		def test_adds_component_to_components_list(self, mocker):
 			component = types.SimpleNamespace()
+			component.set_batch = mocker.stub()
 			renderer = Renderer()
 			renderer.add(component)
 			assert renderer.components == [component]

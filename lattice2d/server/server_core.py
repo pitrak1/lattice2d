@@ -33,7 +33,7 @@ class ServerCore(RootNodeWithHandlers):
 		self.destroy_game(game_name)
 
 	def create_player_handler(self, command):
-		self.players.append(Player(command.data['player_name'], command.connection))
+		self.players.append(Config()['player_class'](command.data['player_name'], command.connection))
 		command.update_and_send(status='success')
 
 	def create_game_handler(self, command):

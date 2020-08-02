@@ -5,10 +5,12 @@ from constants import CONSTANTS
 from client.client_component_state import ClientComponentState
 from client.client_network_state import ClientNetworkState
 from server.server_network_state import ServerNetworkState
+from lattice2d.grid.player import Player
 
 CONFIG = copy.deepcopy(CONSTANTS)
 CONFIG.update({
 	'command_types': ['some_network_command'],
+	'player_class': Player,
 	'client_states': {
 		'starting_state': ClientComponentState,
 		'states': [

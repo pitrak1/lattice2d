@@ -27,6 +27,7 @@ These are currently the configurable elements:
 	- width: the width of the grid to create
 	- height: the height of the grid to create
 	- size: the size in pixels to space the grid
+- player_class: the class to use as a player, recommend a subclass of `lattice2d.grid.player`
 - client_states:
 	- starting_state: the class to start the client state machine on
 	- states: the state classes with transitions
@@ -67,6 +68,7 @@ Here is an example:
 		'ip_address': '0.0.0.0',
 		'port': 8080
 	},
+	'player_class': Player,
 	'client_states': {
 		'starting_state': ClientState1,
 		'states': [
