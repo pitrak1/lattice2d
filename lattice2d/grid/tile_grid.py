@@ -20,6 +20,7 @@ class TileGrid(Node):
 
 		self.children[grid_position[1] * self.grid_dimensions[0] + grid_position[0]] = tile
 		tile.set_grid_position(grid_position)
+		tile.base_position = self.base_position
 
 		if grid_position[1] + 1 < self.grid_dimensions[1]:
 			up_tile = self.children[(grid_position[1] + 1) * self.grid_dimensions[0] + grid_position[0]]
@@ -42,6 +43,7 @@ class TileGrid(Node):
 		assert grid_position[1] >= 0 and grid_position[1] < self.grid_dimensions[1]
 		assert isinstance(self.children[grid_position[1] * self.grid_dimensions[0] + grid_position[0]], Tile)
 		self.children[grid_position[1] * self.grid_dimensions[0] + grid_position[0]].add_actor(actor)
+		actor.base_position = self.base_position
 
 	def move_actor(self, grid_position, actor):
 		assert grid_position[0] >= 0 and grid_position[0] < self.grid_dimensions[0] and grid_position[1] >= 0 and grid_position[1] < self.grid_dimensions[1]
