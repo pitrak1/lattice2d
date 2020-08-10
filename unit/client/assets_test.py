@@ -19,6 +19,7 @@ class TestAssets():
 		def test_loads_grid(self):
 			assert isinstance(Assets().common['test_grid'], list)
 			assert isinstance(Assets().common['test_grid'][0], pyglet.image.Texture)
+			assert isinstance(Assets().common['test_grid_entry'], pyglet.image.Texture)
 
 	class TestGroups():
 		def test_loads_common_assets(self):

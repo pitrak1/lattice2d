@@ -22,19 +22,21 @@ TEST_CONFIG = {
 	'assets': {
 		'path': os.path.join(ROOT_DIR, 'assets'),
 		'tiles': [],
-		'characters': {
-			'test_character': {
+		'characters': [
+			{
+				'variable_name': 'test_character',
 				'display_name': 'Test Character',
 				'location': 'test.jpg',
 				'type': 'single'
 			}
-		},
-		'custom': {
-			'test_custom': {
+		],
+		'custom': [
+			{
+				'variable_name': 'test_custom',
 				'location': 'test.jpg',
 				'type': 'single'
 			}
-		}
+		]
 	}
 }
 
