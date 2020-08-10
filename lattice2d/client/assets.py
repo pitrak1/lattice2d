@@ -58,6 +58,7 @@ class Assets(InnerAssets):
 			self.__load_common()
 			self.__load_ui()
 			self.__load_characters()
+			self.__load_tiles()
 			self.__load_custom()
 
 
@@ -85,6 +86,14 @@ class Assets(InnerAssets):
 		for key, value in Config()['assets']['characters'].items():
 			self.characters[key] = self.__load_asset(value)
 
+	def __load_tiles(self):
+		pyglet.resource.path = [Config()['assets']['path']]
+		pyglet.resource.reindex()
+
+		self.tiles = {}
+		for entry in Config()['assets']['tiles']:
+			self.tiles[entry['variable_name']] = self.__load_asset(entry['asset'])
+
 	def __load_custom(self):
 		pyglet.resource.path = [Config()['assets']['path']]
 		pyglet.resource.reindex()
@@ -106,7 +115,10 @@ class Assets(InnerAssets):
 			image = pyglet.resource.image(asset['location'])
 			grid = list(pyglet.image.ImageGrid(image, asset['rows'], asset['columns']))
 			[self.__center_asset(i) for i in grid]
-			return grid
+			if 'index' in asset.keys():
+				return grid[asset['index']]
+			else:
+				return grid
 
 	def __center_animation(self, asset):
 		asset.anchor_x = asset.get_max_width() / 2
