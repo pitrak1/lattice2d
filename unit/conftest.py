@@ -1,7 +1,9 @@
 import pytest
 import os
 from lattice2d.definitions import ROOT_DIR
+from lattice2d.grid.player import Player
 from lattice2d.config import Config
+from lattice2d.server.server_state import ServerState
 
 TEST_CONFIG = {
 	'window_dimensions': (100, 100),
@@ -16,9 +18,18 @@ TEST_CONFIG = {
 		'height': 2,
 		'size': 100
 	},
+	'player_class': Player,
 	'command_types': ['test_command'],
 	'client_states': {},
-	'server_states': {},
+	'server_states': {
+		'starting_state': ServerState,
+		'states': [
+			{
+				'state': ServerState,
+				'transitions': {}
+			}
+		]
+	},
 	'assets': {
 		'path': os.path.join(ROOT_DIR, 'assets'),
 		'tiles': [],

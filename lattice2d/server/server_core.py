@@ -7,13 +7,15 @@ from lattice2d.config import Config
 from lattice2d.grid.player import Player
 
 class ServerCore(RootNodeWithHandlers):
-	def __init__(self, config):
+	def __init__(self, config, test=False):
 		Config(config)
 		super().__init__()
-		self.server = Server(self.add_command)
+		self.test = test
+		if not test: self.server = Server(self.add_command)
 		self.players = []
 
 	def run(self):
+		if self.test: self.__on_update_loop()
 		self.update_thread = threading.Thread(target=self.__on_update_loop, daemon=True)
 		self.update_thread.start()
 		self.server.run()
@@ -31,6 +33,7 @@ class ServerCore(RootNodeWithHandlers):
 	def destroy_game_handler(self, command):
 		game_name = command.data['game_name']
 		self.destroy_game(game_name)
+		command.update_and_send(status='success')
 
 	def create_player_handler(self, command):
 		self.players.append(Config()['player_class'](command.data['player_name'], command.connection))
