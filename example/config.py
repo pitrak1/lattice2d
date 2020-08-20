@@ -39,11 +39,12 @@ CONFIG.update({
 		'path': os.path.join(ROOT_DIR,'assets'),
 		'tiles': [],
 		'characters': {},
-		'custom': {
-			'background': {
+		'custom': [
+			{
+				'variable_name': 'background',
 				'location': 'background.jpg',
 				'type': 'single'
 			}
-		}
+		]
 	}
 })
