@@ -56,6 +56,13 @@ UI = [
 		'type': 'grid',
 		'rows': 3,
 		'columns': 3
+	},
+	{
+		'variable_name': 'grey_button',
+		'location': 'grey_button.png',
+		'type': 'grid',
+		'rows': 3,
+		'columns': 3
 	}
 ]
 

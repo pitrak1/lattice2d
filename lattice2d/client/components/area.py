@@ -5,13 +5,13 @@ from lattice2d.nodes.node import Node
 from lattice2d.utilities.bounds import within_rect_bounds
 
 class Area(Node):
-	def __init__(self, position, unit_dimensions, batch, group, align='center'):
+	def __init__(self, position, unit_dimensions, batch, group, align='center', asset_key='grey_panel'):
 		super().__init__()
 		self.position = position
 		self.unit_dimensions = unit_dimensions
 		self.sprites = []
 
-		self.asset = Assets().ui['grey_panel']
+		self.asset = Assets().ui[asset_key]
 		tile_size = self.asset[0].width
 
 		if align == 'left':
