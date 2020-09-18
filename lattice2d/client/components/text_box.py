@@ -17,7 +17,7 @@ class TextBox(Area):
 		self.caret = pyglet.text.caret.Caret(self.layout)
 
 		self.max_length = max_length
-		self.input_label = pyglet.text.Label(label_text, x=position[0], y=position[1] + self.asset[0].width * 2, anchor_x='left', anchor_y='center', align='left', font_size=15, color=(0, 0, 0, 255), batch=batch, group=text_group)
+		self.input_label = pyglet.text.Label(label_text, x=position[0], y=position[1] + self.asset[0].width + 15, anchor_x='left', anchor_y='center', align='left', font_size=15, color=(0, 0, 0, 255), batch=batch, group=text_group)
 		self.input_error = pyglet.text.Label('', x=position[0], y=position[1] - 60, anchor_x='left', anchor_y='center', align='left', font_size=15, color=(255, 0, 0, 255), batch=batch, group=text_group)
 		self.selected = False
 
