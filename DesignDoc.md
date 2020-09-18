@@ -18,6 +18,13 @@ c = ClientCore(CONFIG)
 c.run()
 ```
 
+Base configuration for things the cores handle are as follows:
+
+```
+'window_dimensions': (1280, 720)
+'log_level': 3
+```
+
 ###State Machine
 
 A state machine exists for both the client and the server in the context of a game.  States can be created by inheriting from the ClientState or ServerState classes and then configured to be used.  The configuration should allow specifying transitions by identifying a starting state and what method name to call to transition to what state.  An example configuration is:
