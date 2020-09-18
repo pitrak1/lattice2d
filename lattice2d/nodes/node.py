@@ -2,6 +2,9 @@ from lattice2d.config import Config
 
 class Node():
 	def __init__(self):
+		self.__attach_handlers()
+
+	def __attach_handlers(self):
 		self.__handlers = {}
 		handler_list = [func[:-8] for func in dir(self) if callable(getattr(self, func)) and '_handler' in func]
 		for entry in Config()['command_types']:

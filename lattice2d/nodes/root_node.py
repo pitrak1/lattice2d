@@ -15,5 +15,5 @@ class RootNode(Node):
 		while self.command_queue.has_elements():
 			command = self.command_queue.popleft()
 			log(f'Handling command type {command.type}', LOG_LEVEL_INTERNAL_LOW)
-			[child.on_command(command) for child in self.children]
+			self.on_command(command)
 		[child.on_update(dt) for child in self.children]
