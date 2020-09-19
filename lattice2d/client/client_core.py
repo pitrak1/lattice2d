@@ -2,7 +2,6 @@ import pyglet
 from lattice2d.nodes.root_node import RootNode
 from lattice2d.config import Config
 from lattice2d.network.client import Client
-from lattice2d.client.client_transition import ClientTransition
 
 class ClientCore(RootNode):
 	def __init__(self, config):
@@ -31,8 +30,7 @@ class ClientCore(RootNode):
 
 		state_data = next(s for s in Config()['client_states']['states'] if s['state'] == state)
 		for key, value in state_data['transitions'].items():
-			transition = ClientTransition(self, key, value)			
-			setattr(self.current_state, key, transition.run)
+			setattr(self.current_state, key, lambda custom_data={} : self.set_state(value, custom_data={}))
 
 		self.children = [self.current_state]
 		if Config()['network']: self.children.append(self.__network)
