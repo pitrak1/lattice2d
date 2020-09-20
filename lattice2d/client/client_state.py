@@ -1,4 +1,4 @@
-from lattice2d.nodes.node import Node
+from lattice2d.nodes import Node
 from lattice2d.client.renderer import Renderer
 
 class ClientState(Node):

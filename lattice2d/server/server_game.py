@@ -1,7 +1,7 @@
-from lattice2d.nodes.root_node import RootNode
+from lattice2d.nodes import RootNode
 from lattice2d.config import Config
 from lattice2d.utilities.log import log, LOG_LEVEL_INTERNAL_LOW
-from lattice2d.network.network_command import NetworkCommand
+from lattice2d.command import Command
 
 class ServerGame(RootNode):
 	def __init__(self, name, destroy_game):
@@ -49,7 +49,7 @@ class ServerGame(RootNode):
 		parsed_players = [(player.name, player.host) for player in self.players]
 		for player in self.players:
 			if player != exception:
-				NetworkCommand.create_and_send(
+				Command.create_and_send(
 					'broadcast_players_in_game', 
 					{ 'players': parsed_players }, 
 					'success', 

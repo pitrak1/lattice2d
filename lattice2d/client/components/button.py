@@ -1,5 +1,5 @@
 import pyglet
-from lattice2d.nodes.node import Node
+from lattice2d.nodes import Node
 from lattice2d.client.components.area import Area
 
 class Button(Node):

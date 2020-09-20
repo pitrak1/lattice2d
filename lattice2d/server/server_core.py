@@ -1,7 +1,7 @@
 import threading
-from lattice2d.nodes.root_node import RootNode
+from lattice2d.nodes import RootNode
 from lattice2d.utilities.log import log, LOG_LEVEL_INTERNAL_LOW
-from lattice2d.network.server import Server
+from lattice2d.network import Server
 from lattice2d.server.server_game import ServerGame
 from lattice2d.config import Config
 from lattice2d.grid.player import Player

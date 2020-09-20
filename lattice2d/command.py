@@ -1,25 +1,21 @@
 import json
-from lattice2d.nodes.command import Command
 
 def serialize(command):
-	if isinstance(command, NetworkCommand):
-		converted = { 'type': command.type, 'data': command.data, 'status': command.status }
-	else:
-		converted = { 'type': command.type, 'data': command.data }
-
+	converted = { 'type': command.type, 'data': command.data, 'status': command.status }
 	return json.dumps(converted) + '|'
 
 def deserialize(command):
 	deserialized = json.loads(command)
 
 	if 'status' in deserialized.keys():
-		return NetworkCommand(deserialized['type'], deserialized['data'], deserialized['status'], None)
+		return Command(deserialized['type'], deserialized['data'], deserialized['status'], None)
 	else:
 		return Command(deserialized['type'], deserialized['data'])
 
-class NetworkCommand(Command):
+class Command():
 	def __init__(self, type_, data={}, status=None, connection=None):
-		super().__init__(type_, data)
+		self.type = type_
+		self.data = data
 		self.status = status
 		self.connection = connection
 

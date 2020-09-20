@@ -1,12 +1,13 @@
 import pyglet
-from lattice2d.nodes.root_node import RootNode
+from lattice2d.nodes import RootNode
 from lattice2d.config import Config
-from lattice2d.network.client import Client
+from lattice2d.network import Client
+from lattice2d.command import Command
 
 class ClientCore(RootNode):
 	def __init__(self, config):
 		Config(config)
-		super(WindowRootNode).__init__()
+		super().__init__()
 		self.__initialize_window()
 		self.__initialize_network()
 		self.__initialize_state_machine()

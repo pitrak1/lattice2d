@@ -4,7 +4,7 @@ from lattice2d.client.renderer import Renderer
 from lattice2d.client.components.button import Button
 from lattice2d.client.components.label import Label
 from example.constants import WINDOW_CENTER, CONSTANTS
-from lattice2d.network.network_command import NetworkCommand
+from lattice2d.command import Command
 
 class ClientNetworkState(ClientState):
 	def __init__(self, add_command, custom_data={}):
@@ -67,10 +67,10 @@ class ClientNetworkState(ClientState):
 		# create a player, and then have the player join the game.
 		
 		if self.response_count == 0:
-			self.add_command(NetworkCommand('create_player', { 'player_name': 'Test Player' }, 'pending'))
-			self.add_command(NetworkCommand('create_game', { 'game_name': 'Test Game' }, 'pending'))
-			self.add_command(NetworkCommand('join_game', { 'game_name': 'Test Game' }, 'pending'))
-		self.add_command(NetworkCommand('some_network_command', status='pending'))
+			self.add_command(Command('create_player', { 'player_name': 'Test Player' }, 'pending'))
+			self.add_command(Command('create_game', { 'game_name': 'Test Game' }, 'pending'))
+			self.add_command(Command('join_game', { 'game_name': 'Test Game' }, 'pending'))
+		self.add_command(Command('some_network_command', status='pending'))
 
 	def some_network_command_handler(self, command):
 		if command.status == 'success':

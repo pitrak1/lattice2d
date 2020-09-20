@@ -1,4 +1,4 @@
-from lattice2d.nodes.node import Node
+from lattice2d.nodes import Node
 from lattice2d.grid.empty_tile import EmptyTile
 from lattice2d.grid.tile import Tile
 

@@ -1,5 +1,5 @@
 import pyglet
-from lattice2d.nodes.node import Node
+from lattice2d.nodes import Node
 
 class Label(pyglet.text.Label, Node):
 	def __init__(self, *args, **kwargs):

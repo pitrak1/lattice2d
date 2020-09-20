@@ -1,4 +1,4 @@
-from lattice2d.nodes.node import Node
+from lattice2d.nodes import Node
 from lattice2d.config import Config
 
 class GridEntity(Node):

@@ -1,4 +1,4 @@
-from lattice2d.nodes.node import Node
+from lattice2d.nodes import Node
 
 class ServerState(Node):
 	def __init__(self, game, custom_data={}):
