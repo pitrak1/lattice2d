@@ -10,53 +10,39 @@ class ClientNetworkState(ClientState):
 	def __init__(self, add_command, custom_data={}):
 		self.response_count = 0
 		super().__init__(add_command, custom_data)
-
-	def redraw(self):
-		self.response_label = Label(
-			str(self.response_count),
+		self.register_component('response_label', 0, Label(
+			'0',
 			x=WINDOW_CENTER[0] * 1.5,
 			y=CONSTANTS['window_dimensions'][1] - 420,
 			font_size=20,
 			anchor_x='center',
 			anchor_y='center',
-			color=(255, 255, 255, 255),
-			batch=self.renderer.get_batch(),
-			group=self.renderer.get_group(1)
-		)
-		self.children = [
-			Button(
-				position=(WINDOW_CENTER[0] // 2, CONSTANTS['window_dimensions'][1] - 380),
-				unit_dimensions=(8, 3),
-				text='Send Network Command', 
-				on_click=self.button_press,
-				batch=self.renderer.get_batch(),
-				area_group=self.renderer.get_group(1),
-				text_group=self.renderer.get_group(2)
-			),
-			Label(
-				'Clicking the Button sends a request to the server.',
-				x=WINDOW_CENTER[0] // 2,
-				y=CONSTANTS['window_dimensions'][1] - 450,
-				font_size=20,
-				anchor_x='center',
-				anchor_y='center',
-				color=(0, 0, 0, 255),
-				batch=self.renderer.get_batch(),
-				group=self.renderer.get_group(2)
-			),
-			Label(
-				'Server responses:',
-				x=WINDOW_CENTER[0] * 1.5,
-				y=CONSTANTS['window_dimensions'][1] - 380,
-				font_size=20,
-				anchor_x='center',
-				anchor_y='center',
-				color=(255, 255, 255, 255),
-				batch=self.renderer.get_batch(),
-				group=self.renderer.get_group(1)
-			),
-			self.response_label
-		]
+			color=(255, 255, 255, 255)
+		))
+		self.register_component('send_button', 0, Button(
+			position=(WINDOW_CENTER[0] // 2, CONSTANTS['window_dimensions'][1] - 380),
+			unit_dimensions=(8, 3),
+			text='Send Network Command', 
+			on_click=self.button_press
+		))
+		self.register_component('info_label', 0, Label(
+			'Clicking the Button sends a request to the server.',
+			x=WINDOW_CENTER[0] // 2,
+			y=CONSTANTS['window_dimensions'][1] - 450,
+			font_size=20,
+			anchor_x='center',
+			anchor_y='center',
+			color=(255, 255, 255, 255)
+		))
+		self.register_component('counter_label', 0, Label(
+			'Server responses:',
+			x=WINDOW_CENTER[0] * 1.5,
+			y=CONSTANTS['window_dimensions'][1] - 380,
+			font_size=20,
+			anchor_x='center',
+			anchor_y='center',
+			color=(255, 255, 255, 255)
+		))
 
 	def button_press(self):
 		# 	Technically, the server is stateless outside of a game.  States only exist on the server
@@ -75,4 +61,4 @@ class ClientNetworkState(ClientState):
 	def some_network_command_handler(self, command):
 		if command.status == 'success':
 			self.response_count += 1
-			self.response_label.text = str(self.response_count)
+			self.get_component('response_label').text = str(self.response_count)

@@ -1,7 +1,11 @@
 import pyglet
-from lattice2d.nodes import Node
+from lattice2d.client.components.component import Component
 
-class Label(pyglet.text.Label, Node):
+class Label(pyglet.text.Label, Component):
 	def __init__(self, *args, **kwargs):
 		pyglet.text.Label.__init__(self, *args, **kwargs)
-		Node.__init__(self)
+		Component.__init__(self)
+
+	def register(self, batch, group_set):
+		self.batch = batch
+		self.group = group_set[0]
