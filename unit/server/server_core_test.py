@@ -3,7 +3,7 @@ from lattice2d.server.server_core import ServerCore
 from lattice2d.server.server_game import ServerGame
 from lattice2d.grid.player import Player
 from lattice2d.network.network_command import NetworkCommand
-from lattice2d.nodes.command import Command
+from lattice2d.command import Command
 from unit.conftest import TEST_CONFIG
 
 @pytest.fixture

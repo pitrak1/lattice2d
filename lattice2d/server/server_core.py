@@ -4,7 +4,7 @@ from lattice2d.utilities.log import log, LOG_LEVEL_INTERNAL_LOW
 from lattice2d.network import Server
 from lattice2d.server.server_game import ServerGame
 from lattice2d.config import Config
-from lattice2d.grid.player import Player
+from lattice2d.grid import Player
 
 class ServerCore(RootNode):
 	def __init__(self, config, test=False):

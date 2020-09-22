@@ -3,7 +3,7 @@ from lattice2d.grid.tile_grid import TileGrid
 from lattice2d.grid.tile import Tile
 from lattice2d.grid.actor import Actor
 from lattice2d.grid.empty_tile import EmptyTile
-from lattice2d.nodes.command import Command
+from lattice2d.command import Command
 
 class TestTileGrid():
 	def test_initializes_empty_grid(self):

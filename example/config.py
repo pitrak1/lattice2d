@@ -5,7 +5,7 @@ from constants import CONSTANTS
 from client.client_component_state import ClientComponentState
 from client.client_network_state import ClientNetworkState
 from server.server_network_state import ServerNetworkState
-from lattice2d.grid.player import Player
+from lattice2d.grid import Player
 
 CONFIG = copy.deepcopy(CONSTANTS)
 CONFIG.update({

@@ -1,5 +1,5 @@
 from lattice2d.grid.grid_entity import GridEntity
-from lattice2d.nodes.command import Command
+from lattice2d.command import Command
 
 class TestGridEntity():
 	def test_sets_grid_position(self, mocker):

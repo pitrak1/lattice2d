@@ -39,7 +39,6 @@ class ClientState(Node):
 		return self.__components[identifier][1]
 
 	def remove_component(self, identifier):
-		assert layer >= 0 and layer <= 6
 		assert identifier in self.__components.keys()
 
 		del self.__components[identifier]

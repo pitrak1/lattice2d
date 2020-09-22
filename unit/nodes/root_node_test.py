@@ -1,6 +1,6 @@
 import types
 from lattice2d.nodes.root_node import RootNode
-from lattice2d.nodes.command import Command
+from lattice2d.command import Command
 
 class TestRootNode():
 	def test_calls_on_command_on_self_for_every_command_on_update(self, mocker):

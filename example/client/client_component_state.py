@@ -1,6 +1,4 @@
-import pyglet
 from lattice2d.client.client_state import ClientState
-from lattice2d.client.renderer import Renderer
 from lattice2d.client.components.background import Background
 from lattice2d.client.components.button import Button
 from lattice2d.client.components.text_box import TextBox

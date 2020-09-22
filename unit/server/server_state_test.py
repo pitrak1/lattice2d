@@ -1,5 +1,5 @@
 import types
-from lattice2d.nodes.command import Command
+from lattice2d.command import Command
 from lattice2d.network.network_command import NetworkCommand
 from lattice2d.server.server_state import ServerState
 

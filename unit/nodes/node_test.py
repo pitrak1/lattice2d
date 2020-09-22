@@ -1,6 +1,6 @@
 import types
 from lattice2d.nodes.node import Node
-from lattice2d.nodes.command import Command
+from lattice2d.command import Command
 
 class MyNode(Node):
 	def __init__(self):
