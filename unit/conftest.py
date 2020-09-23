@@ -1,7 +1,7 @@
 import pytest
 import os
 from lattice2d.definitions import ROOT_DIR
-from lattice2d.grid.player import Player
+from lattice2d.grid import Player
 from lattice2d.config import Config
 from lattice2d.server.server_state import ServerState
 

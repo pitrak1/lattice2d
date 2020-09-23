@@ -1,6 +1,5 @@
 import types
 from lattice2d.command import Command
-from lattice2d.network.network_command import NetworkCommand
 from lattice2d.server.server_state import ServerState
 
 class TestServerState():
@@ -27,7 +26,7 @@ class TestServerState():
 			game.is_current_player = lambda player : True
 			game.players = []
 			state = ServerState(game)
-			command = NetworkCommand('get_current_player')
+			command = Command('get_current_player')
 			mocker.patch.object(command, 'update_and_send')
 			state.on_command(command)
 			command.update_and_send.assert_called_once()
@@ -41,7 +40,7 @@ class TestServerState():
 			game.get_current_player = lambda : player
 			game.players = []
 			state = ServerState(game)
-			command = NetworkCommand('get_current_player')
+			command = Command('get_current_player')
 			mocker.patch.object(command, 'update_and_send')
 			state.on_command(command)
 			command.update_and_send.assert_called_once()

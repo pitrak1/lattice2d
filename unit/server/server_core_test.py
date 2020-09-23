@@ -1,15 +1,12 @@
 import pytest
 from lattice2d.server.server_core import ServerCore
-from lattice2d.server.server_game import ServerGame
-from lattice2d.grid.player import Player
-from lattice2d.network.network_command import NetworkCommand
 from lattice2d.command import Command
 from unit.conftest import TEST_CONFIG
 
 @pytest.fixture
 def create_game(mocker, get_keyword_args):
 	def __create_game(core, game_name):
-		create_game_command = NetworkCommand('create_game', { 'game_name': game_name })
+		create_game_command = Command('create_game', { 'game_name': game_name })
 		mocker.patch.object(create_game_command, 'update_and_send')
 		core.on_command(create_game_command)
 		assert get_keyword_args(create_game_command.update_and_send, 0, 'status') == 'success'
@@ -18,7 +15,7 @@ def create_game(mocker, get_keyword_args):
 @pytest.fixture
 def get_games(mocker, get_keyword_args):
 	def __get_games(core, games):
-		get_games_command = NetworkCommand('get_games')
+		get_games_command = Command('get_games')
 		mocker.patch.object(get_games_command, 'update_and_send')
 		core.on_command(get_games_command)
 		assert get_keyword_args(get_games_command.update_and_send, 0, 'status') == 'success'
@@ -28,7 +25,7 @@ def get_games(mocker, get_keyword_args):
 @pytest.fixture
 def create_player(mocker, get_keyword_args):
 	def __create_player(core, player_name, player_connection=None):
-		create_player_command = NetworkCommand('create_player', { 'player_name': player_name }, connection=player_connection)
+		create_player_command = Command('create_player', { 'player_name': player_name }, connection=player_connection)
 		mocker.patch.object(create_player_command, 'update_and_send')
 		core.on_command(create_player_command)
 		assert get_keyword_args(create_player_command.update_and_send, 0, 'status') == 'success'
@@ -37,7 +34,7 @@ def create_player(mocker, get_keyword_args):
 @pytest.fixture
 def join_game(mocker, get_keyword_args):
 	def __join_game(core, game_name, player_connection):
-		join_game_command = NetworkCommand('join_game', { 'game_name': game_name }, connection=player_connection)
+		join_game_command = Command('join_game', { 'game_name': game_name }, connection=player_connection)
 		mocker.patch.object(join_game_command, 'update_and_send')
 		core.on_command(join_game_command)
 		assert get_keyword_args(join_game_command.update_and_send, 0, 'status') == 'success'
@@ -48,12 +45,12 @@ class TestServerCore():
 		def test_creates_and_gets_games(self, mocker, get_keyword_args):
 			core = ServerCore(TEST_CONFIG, test=True)
 
-			create_game_command = NetworkCommand('create_game', { 'game_name': 'game name here' })
+			create_game_command = Command('create_game', { 'game_name': 'game name here' })
 			mocker.patch.object(create_game_command, 'update_and_send')
 			core.on_command(create_game_command)
 			assert get_keyword_args(create_game_command.update_and_send, 0, 'status') == 'success'
 
-			get_games_command = NetworkCommand('get_games')
+			get_games_command = Command('get_games')
 			mocker.patch.object(get_games_command, 'update_and_send')
 			core.on_command(get_games_command)
 			assert get_keyword_args(get_games_command.update_and_send, 0, 'status') == 'success'
@@ -63,7 +60,7 @@ class TestServerCore():
 			core = ServerCore(TEST_CONFIG, test=True)
 			create_game(core, 'game name here')
 
-			destroy_game_command = NetworkCommand('destroy_game', { 'game_name': 'game name here' })
+			destroy_game_command = Command('destroy_game', { 'game_name': 'game name here' })
 			mocker.patch.object(destroy_game_command, 'update_and_send')
 			core.on_command(destroy_game_command)
 			assert get_keyword_args(destroy_game_command.update_and_send, 0, 'status') == 'success'
@@ -76,7 +73,7 @@ class TestServerCore():
 			create_player(core, 'player name here', 'player connection')
 			join_game(core, 'game name here', 'player connection')
 
-			destroy_game_command = NetworkCommand('destroy_game', { 'game_name': 'game name here' })
+			destroy_game_command = Command('destroy_game', { 'game_name': 'game name here' })
 			mocker.patch.object(destroy_game_command, 'update_and_send')
 			with pytest.raises(AssertionError):
 				core.on_command(destroy_game_command)
@@ -109,7 +106,7 @@ class TestServerCore():
 			core = ServerCore(TEST_CONFIG, test=True)
 			create_player(core, 'player name here', 'player connection')
 
-			logout_command = NetworkCommand('logout', {}, connection='player connection')
+			logout_command = Command('logout', {}, connection='player connection')
 			mocker.patch.object(logout_command, 'update_and_send')
 			core.on_command(logout_command)
 			assert get_keyword_args(logout_command.update_and_send, 0, 'status') == 'success'
@@ -120,7 +117,7 @@ class TestServerCore():
 			core = ServerCore(TEST_CONFIG, test=True)
 			create_player(core, 'player name here', 'player connection')
 
-			logout_command = NetworkCommand('logout', {}, connection='other player connection')
+			logout_command = Command('logout', {}, connection='other player connection')
 			mocker.patch.object(logout_command, 'update_and_send')
 			with pytest.raises(StopIteration):
 				core.on_command(logout_command)
@@ -130,7 +127,7 @@ class TestServerCore():
 			create_game(core, 'game name')
 			create_player(core, 'player name here', 'player connection')
 
-			join_game_command = NetworkCommand('join_game', { 'game_name': 'game name' }, connection='player connection')
+			join_game_command = Command('join_game', { 'game_name': 'game name' }, connection='player connection')
 			mocker.patch.object(join_game_command, 'update_and_send')
 			core.on_command(join_game_command)
 			assert get_keyword_args(join_game_command.update_and_send, 0, 'status') == 'success'
@@ -144,7 +141,7 @@ class TestServerCore():
 			create_player(core, 'player name here', 'player connection')
 			join_game(core, 'game name', 'player connection')
 
-			command = NetworkCommand('fake command', {}, connection='player connection')
+			command = Command('fake command', {}, connection='player connection')
 			core.add_command(command)
 
 			assert core.children[0].command_queue.popleft() == command
@@ -154,7 +151,7 @@ class TestServerCore():
 			create_game(core, 'game name')
 			create_player(core, 'player name here', 'player connection')
 
-			command = NetworkCommand('fake command', {}, connection='player connection')
+			command = Command('fake command', {}, connection='player connection')
 			core.add_command(command)
 
 			assert core.command_queue.popleft() == command
@@ -163,7 +160,7 @@ class TestServerCore():
 			core = ServerCore(TEST_CONFIG, test=True)
 			create_game(core, 'game name')
 
-			command = NetworkCommand('fake command', {}, connection='player connection')
+			command = Command('fake command', {}, connection='player connection')
 			core.add_command(command)
 
 			assert core.command_queue.popleft() == command
