@@ -6,6 +6,7 @@ LOG_LEVEL_LOW = 2
 LOG_LEVEL_INTERNAL_HIGH = 3
 LOG_LEVEL_INTERNAL_LOW = 4
 
+
 def log(value, log_level):
 	if log_level <= Config()['log_level']:
 		print_value = ''
@@ -14,21 +15,33 @@ def log(value, log_level):
 		print_value += value
 
 		if log_level == LOG_LEVEL_HIGH:
-			prGreen(print_value)
+			print_green(print_value)
 		elif log_level == LOG_LEVEL_MEDIUM:
-			prPurple(print_value)
+			print_purple(print_value)
 		elif log_level == LOG_LEVEL_LOW:
-			prRed(print_value)
+			print_red(print_value)
 		elif log_level == LOG_LEVEL_INTERNAL_HIGH:
-			prCyan(print_value)
+			print_cyan(print_value)
 		else:
-			prYellow(print_value)
+			print_yellow(print_value)
 
-def prRed(skk): print("\033[91m {}\033[00m" .format(skk)) 
-def prGreen(skk): print("\033[92m {}\033[00m" .format(skk)) 
-def prYellow(skk): print("\033[93m {}\033[00m" .format(skk)) 
-def prLightPurple(skk): print("\033[94m {}\033[00m" .format(skk)) 
-def prPurple(skk): print("\033[95m {}\033[00m" .format(skk)) 
-def prCyan(skk): print("\033[96m {}\033[00m" .format(skk)) 
-def prLightGray(skk): print("\033[97m {}\033[00m" .format(skk)) 
-def prBlack(skk): print("\033[98m {}\033[00m" .format(skk)) 
+
+def print_red(skk): print("\033[91m {}\033[00m".format(skk))
+
+
+def print_green(skk): print("\033[92m {}\033[00m".format(skk))
+
+
+def print_yellow(skk): print("\033[93m {}\033[00m".format(skk))
+
+
+def print_purple(skk): print("\033[95m {}\033[00m".format(skk))
+
+
+def print_cyan(skk): print("\033[96m {}\033[00m".format(skk))
+
+
+def print_grey(skk): print("\033[97m {}\033[00m".format(skk))
+
+
+def print_black(skk): print("\033[98m {}\033[00m".format(skk))

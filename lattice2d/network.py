@@ -1,9 +1,11 @@
 import socket
 import threading
-from lattice2d.nodes import Node
+
 from lattice2d.command import deserialize
-from lattice2d.utilities.log import log, LOG_LEVEL_INTERNAL_HIGH
 from lattice2d.config import Config
+from lattice2d.nodes import Node
+from lattice2d.utilities.log import log, LOG_LEVEL_INTERNAL_HIGH
+
 
 class Network(Node):
 	def __init__(self, add_command):
@@ -13,13 +15,15 @@ class Network(Node):
 	def receive(self, connection):
 		while True:
 			received = connection.recv(4096)
-			if not received: break
+			if not received:
+				break
 			command_strings = received.decode()[:-1].split('|')
 			for command in command_strings:
 				log(f'Received {command}', LOG_LEVEL_INTERNAL_HIGH)
 				result = deserialize(command)
 				result.connection = connection
 				self.add_command(result)
+
 
 class Server(Network):
 	def run(self):
@@ -31,6 +35,7 @@ class Server(Network):
 			connection, address = self.socket.accept()
 			client_thread = threading.Thread(target=self.receive, args=(connection,), daemon=True)
 			client_thread.start()
+
 
 class Client(Network):
 	def __init__(self, add_command):

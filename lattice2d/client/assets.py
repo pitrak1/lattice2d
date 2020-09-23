@@ -1,5 +1,7 @@
-import pyglet
 import os
+
+import pyglet
+
 from lattice2d.config import Config
 from lattice2d.definitions import ROOT_DIR
 
@@ -66,15 +68,18 @@ UI = [
 	}
 ]
 
+
 class InnerAssets:
 	_shared_state = {}
+
 	def __init__(self):
 		self.__dict__ = self._shared_state
+
 
 class Assets(InnerAssets):
 	def __init__(self):
 		super().__init__()
-		
+
 		if not hasattr(self, 'common'):
 			self.__load_common()
 			self.__load_ui()
@@ -82,9 +87,8 @@ class Assets(InnerAssets):
 			self.__load_tiles()
 			self.__load_custom()
 
-
 	def __load_common(self):
-		pyglet.resource.path = [os.path.join(ROOT_DIR,'assets')]
+		pyglet.resource.path = [os.path.join(ROOT_DIR, 'assets')]
 		pyglet.resource.reindex()
 
 		self.common = {}
@@ -92,7 +96,7 @@ class Assets(InnerAssets):
 			self.__load_asset(entry, self.common)
 
 	def __load_ui(self):
-		pyglet.resource.path = [os.path.join(ROOT_DIR,'assets')]
+		pyglet.resource.path = [os.path.join(ROOT_DIR, 'assets')]
 		pyglet.resource.reindex()
 
 		self.ui = {}
@@ -137,7 +141,8 @@ class Assets(InnerAssets):
 			image = pyglet.resource.image(entry['location'])
 			grid = list(pyglet.image.ImageGrid(image, entry['rows'], entry['columns']))
 			[self.__center_asset(i) for i in grid]
-			if 'variable_name' in entry.keys(): collection[entry['variable_name']] = grid
+			if 'variable_name' in entry.keys():
+				collection[entry['variable_name']] = grid
 			if 'assets' in entry.keys():
 				for single_asset in entry['assets']:
 					collection[single_asset['variable_name']] = grid[single_asset['index']]

@@ -1,8 +1,9 @@
 from lattice2d.config import Config
-from lattice2d.utilities.threaded_queue import ThreadedQueue
 from lattice2d.utilities.log import log, LOG_LEVEL_INTERNAL_LOW
+from lattice2d.utilities.threaded_queue import ThreadedQueue
 
-class Node():
+
+class Node:
 	def __init__(self):
 		self.__attach_handlers()
 
@@ -17,6 +18,7 @@ class Node():
 		self.children = []
 
 	def on_command(self, command):
+		# noinspection PyArgumentList
 		return self.__handlers[command.type](command)
 
 	def default_handler(self, command):
@@ -27,6 +29,7 @@ class Node():
 
 	def on_draw(self):
 		[child.on_draw() for child in self.children]
+
 
 class RootNode(Node):
 	def __init__(self):

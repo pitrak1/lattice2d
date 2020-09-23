@@ -1,5 +1,7 @@
 import pyglet
+
 from lattice2d.client.components.component import Component
+
 
 class Label(pyglet.text.Label, Component):
 	def __init__(self, *args, **kwargs):

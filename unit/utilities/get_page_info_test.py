@@ -1,6 +1,7 @@
 from lattice2d.utilities.get_page_info import get_page_info
 
-class TestGetPageInfo():
+
+class TestGetPageInfo:
 	def test_returns_correct_data_on_first_page(self):
 		result = get_page_info(0, 4, 6)
 		assert result == [0, 4, True, False]

@@ -1,6 +1,7 @@
 import threading
 
-class ThreadedSync():
+
+class ThreadedSync:
 	def __init__(self, count_max):
 		self.__lock = threading.Lock()
 		self.__count = 0

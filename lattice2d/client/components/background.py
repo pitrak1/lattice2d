@@ -1,7 +1,9 @@
 import pyglet
-from lattice2d.client.components.component import Component
+
 from lattice2d.client.assets import Assets
+from lattice2d.client.components.component import Component
 from lattice2d.config import Config
+
 
 class Background(Component):
 	def __init__(self, asset_key):

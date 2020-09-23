@@ -1,5 +1,6 @@
 from lattice2d.nodes import Node
 
+
 class ServerState(Node):
 	def __init__(self, game, custom_data={}):
 		super().__init__()
@@ -21,4 +22,4 @@ class ServerState(Node):
 			player_name = 'self'
 		else:
 			player_name = self.game.get_current_player().name
-		command.update_and_send(status='success', data={ 'player_name': player_name })
+		command.update_and_send(status='success', data={'player_name': player_name})

@@ -1,7 +1,9 @@
 import pytest
+
 from lattice2d.utilities.threaded_queue import ThreadedQueue
 
-class TestThreadedQueue():
+
+class TestThreadedQueue:
 	def test_has_no_elements_on_initialization(self):
 		queue = ThreadedQueue()
 		assert not queue.has_elements()
@@ -18,5 +20,5 @@ class TestThreadedQueue():
 
 	def test_raises_error_if_queue_is_empty(self):
 		queue = ThreadedQueue()
-		with pytest.raises(IndexError) as exception:
+		with pytest.raises(IndexError):
 			queue.popleft()

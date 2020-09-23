@@ -1,7 +1,8 @@
-from lattice2d.nodes import RootNode
-from lattice2d.config import Config
-from lattice2d.utilities.log import log, LOG_LEVEL_INTERNAL_LOW
 from lattice2d.command import Command
+from lattice2d.config import Config
+from lattice2d.nodes import RootNode
+from lattice2d.utilities.log import log, LOG_LEVEL_INTERNAL_LOW
+
 
 class ServerGame(RootNode):
 	def __init__(self, name, destroy_game):
@@ -17,7 +18,7 @@ class ServerGame(RootNode):
 
 		state_data = next(s for s in Config()['server_states']['states'] if s['state'] == state)
 		for key, value in state_data['transitions'].items():
-			setattr(self.__current_state, key, lambda custom_data={} : self.__set_state(value, custom_data={}))
+			setattr(self.__current_state, key, lambda data={}: self.__set_state(value))
 
 		self.children = [self.__current_state]
 
@@ -50,8 +51,8 @@ class ServerGame(RootNode):
 		for player in self.players:
 			if player != exception:
 				Command.create_and_send(
-					'broadcast_players_in_game', 
-					{ 'players': parsed_players }, 
-					'success', 
+					'broadcast_players_in_game',
+					{'players': parsed_players},
+					'success',
 					player.connection
 				)

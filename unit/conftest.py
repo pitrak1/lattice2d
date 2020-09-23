@@ -1,8 +1,10 @@
-import pytest
 import os
+
+import pytest
+
+from lattice2d.config import Config
 from lattice2d.definitions import ROOT_DIR
 from lattice2d.grid import Player
-from lattice2d.config import Config
 from lattice2d.server.server_state import ServerState
 
 TEST_CONFIG = {
@@ -51,24 +53,29 @@ TEST_CONFIG = {
 	}
 }
 
+
 @pytest.fixture
 def get_positional_args():
 	def _get_positional_args(stub, call_number, arg_number=None):
-		if arg_number != None:
+		if arg_number is not None:
 			return stub.call_args_list[call_number][0][arg_number]
 		else:
 			return stub.call_args_list[call_number][0]
+
 	return _get_positional_args
+
 
 @pytest.fixture
 def get_keyword_args():
 	def _get_keyword_args(stub, call_number, key=None):
-		if key != None:
+		if key is not None:
 			return stub.call_args_list[call_number][1][key]
 		else:
 			return stub.call_args_list[call_number][1]
+
 	return _get_keyword_args
+
 
 @pytest.fixture(autouse=True)
 def set_config():
-	config = Config(TEST_CONFIG)
+	Config(TEST_CONFIG)

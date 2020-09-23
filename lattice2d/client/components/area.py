@@ -1,8 +1,9 @@
 import pyglet
+
 from lattice2d.client.assets import Assets
-from lattice2d.config import Config
 from lattice2d.nodes import Node
 from lattice2d.utilities.bounds import within_rect_bounds
+
 
 class Area(Node):
 	def __init__(self, position, unit_dimensions, align='center', asset_key='grey_panel'):
@@ -38,7 +39,7 @@ class Area(Node):
 					sprite_index = base_sprite_index + 1
 				self.sprites.append(pyglet.sprite.Sprite(self.asset[sprite_index]))
 				self.sprites[j * unit_dimensions[0] + i].update(
-					x=position[0] - base_x_offset + tile_size * i, 
+					x=position[0] - base_x_offset + tile_size * i,
 					y=position[1] - base_y_offset + tile_size * j,
 				)
 
@@ -49,7 +50,7 @@ class Area(Node):
 
 	def within_bounds(self, position):
 		return within_rect_bounds(
-			self.position, 
-			position, 
+			self.position,
+			position,
 			(self.unit_dimensions[0] * self.asset[0].width, self.unit_dimensions[1] * self.asset[0].height)
 		)

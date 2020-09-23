@@ -1,21 +1,24 @@
 import threading
-from lattice2d.nodes import RootNode
-from lattice2d.utilities.log import log, LOG_LEVEL_INTERNAL_LOW
-from lattice2d.network import Server
-from lattice2d.server.server_game import ServerGame
+
 from lattice2d.config import Config
-from lattice2d.grid import Player
+from lattice2d.network import Server
+from lattice2d.nodes import RootNode
+from lattice2d.server.server_game import ServerGame
+from lattice2d.utilities.log import log, LOG_LEVEL_INTERNAL_LOW
+
 
 class ServerCore(RootNode):
 	def __init__(self, config, test=False):
 		Config(config)
 		super().__init__()
 		self.test = test
-		if not test: self.server = Server(self.add_command)
+		if not test:
+			self.server = Server(self.add_command)
 		self.players = []
 
 	def run(self):
-		if self.test: self.__on_update_loop()
+		if self.test:
+			self.__on_update_loop()
 		self.update_thread = threading.Thread(target=self.__on_update_loop, daemon=True)
 		self.update_thread.start()
 		self.server.run()
@@ -45,7 +48,7 @@ class ServerCore(RootNode):
 
 	def get_games_handler(self, command):
 		parsed_games = [(game.name, len(game.players)) for game in self.children]
-		command.update_and_send(status='success', data={ 'games': parsed_games })
+		command.update_and_send(status='success', data={'games': parsed_games})
 
 	def join_game_handler(self, command):
 		game_name = command.data['game_name']

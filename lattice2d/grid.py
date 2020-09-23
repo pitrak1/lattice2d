@@ -1,13 +1,15 @@
-from lattice2d.nodes import Node
 from lattice2d.config import Config
+from lattice2d.nodes import Node
 
 UP = 0
 RIGHT = 1
 DOWN = 2
 LEFT = 3
 
+
 def get_distance(start_position, end_position):
 	return abs(start_position[0] - end_position[0]) + abs(start_position[1] - end_position[1])
+
 
 def get_direction(start_position, end_position):
 	assert get_distance(start_position, end_position) == 1
@@ -21,8 +23,10 @@ def get_direction(start_position, end_position):
 	else:
 		return LEFT
 
+
 def reverse_direction(direction):
 	return (direction + 2) % 4
+
 
 class GridEntity(Node):
 	def __init__(self, grid_position=(None, None), base_position=(0, 0)):
@@ -48,11 +52,14 @@ class GridEntity(Node):
 	def get_scaled_y_position(self, grid_y, offset_y):
 		return ((grid_y * Config()['grid']['size'] + offset_y) * self.base_scale) + self.base_position[1]
 
+
 class Actor(GridEntity):
 	pass
 
+
 class EmptyTile(GridEntity):
 	pass
+
 
 class Player(Actor):
 	def __init__(self, name, connection=None, game=None, grid_position=(None, None), base_position=(0, 0)):
@@ -60,6 +67,7 @@ class Player(Actor):
 		self.name = name
 		self.connection = connection
 		self.game = game
+
 
 class Tile(GridEntity):
 	def add_actor(self, actor):
@@ -71,6 +79,7 @@ class Tile(GridEntity):
 
 		self.children.remove(actor)
 		actor.set_grid_position((None, None))
+
 
 class TileGrid(Node):
 	def __init__(self, grid_dimensions, base_position=(0, 0)):
@@ -85,8 +94,8 @@ class TileGrid(Node):
 		raise NotImplementedError
 
 	def add_tile(self, grid_position, tile):
-		assert grid_position[0] >= 0 and grid_position[0] < self.grid_dimensions[0]
-		assert grid_position[1] >= 0 and grid_position[1] < self.grid_dimensions[1]
+		assert 0 <= grid_position[0] < self.grid_dimensions[0]
+		assert 0 <= grid_position[1] < self.grid_dimensions[1]
 
 		self.children[grid_position[1] * self.grid_dimensions[0] + grid_position[0]] = tile
 		tile.set_grid_position(grid_position)
@@ -109,27 +118,28 @@ class TileGrid(Node):
 			self.add_adjacent_links(tile, left_tile)
 
 	def add_actor(self, grid_position, actor):
-		assert grid_position[0] >= 0 and grid_position[0] < self.grid_dimensions[0]
-		assert grid_position[1] >= 0 and grid_position[1] < self.grid_dimensions[1]
+		assert 0 <= grid_position[0] < self.grid_dimensions[0]
+		assert 0 <= grid_position[1] < self.grid_dimensions[1]
 		assert isinstance(self.children[grid_position[1] * self.grid_dimensions[0] + grid_position[0]], Tile)
 		self.children[grid_position[1] * self.grid_dimensions[0] + grid_position[0]].add_actor(actor)
 		actor.base_position = self.base_position
 
 	def move_actor(self, grid_position, actor):
-		assert grid_position[0] >= 0 and grid_position[0] < self.grid_dimensions[0] and grid_position[1] >= 0 and grid_position[1] < self.grid_dimensions[1]
+		assert 0 <= grid_position[0] < self.grid_dimensions[0] and 0 <= grid_position[1] < self.grid_dimensions[1]
 		assert isinstance(self.children[grid_position[1] * self.grid_dimensions[0] + grid_position[0]], Tile)
 
 		self.children[actor.grid_position[1] * self.grid_dimensions[0] + actor.grid_position[0]].remove_actor(actor)
 		self.children[grid_position[1] * self.grid_dimensions[0] + grid_position[0]].add_actor(actor)
 
 	def adjust_grid_position_handler(self, command):
-		self.base_position = (self.base_position[0] + command.data['adjust'][0], self.base_position[1] + command.data['adjust'][1])
-		command.data.update({ 'base_position': self.base_position })
+		self.base_position = (
+			self.base_position[0] + command.data['adjust'][0], self.base_position[1] + command.data['adjust'][1])
+		command.data.update({'base_position': self.base_position})
 		self.default_handler(command)
 
 	def adjust_grid_scale_handler(self, command):
 		self.base_scale = self.base_scale * command.data['adjust']
-		command.data.update({ 'base_scale': self.base_scale })
+		command.data.update({'base_scale': self.base_scale})
 		self.default_handler(command)
 
 	def mouse_press_handler(self, command):

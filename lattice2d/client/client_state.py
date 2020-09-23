@@ -1,7 +1,7 @@
 import pyglet
-from lattice2d.nodes import Node
-from lattice2d.client.renderer import Renderer
+
 from lattice2d.config import Config
+from lattice2d.nodes import Node
 
 DRAW_LAYER_BACKGROUND_0 = 0
 DRAW_LAYER_BASE_1 = 1
@@ -12,6 +12,7 @@ DRAW_LAYER_UI_5 = 5
 DRAW_LAYER_NOTIFICATIONS_6 = 6
 
 TOTAL_LAYERS = 7
+
 
 class ClientState(Node):
 	def __init__(self, add_command, custom_data={}):
@@ -25,7 +26,7 @@ class ClientState(Node):
 		self.__reset_rendering()
 
 	def register_component(self, identifier, layer, component):
-		assert layer >= 0 and layer <= 6
+		assert 0 <= layer <= 6
 		assert identifier not in self.__components.keys()
 
 		self.__create_groups_for_layer(layer)
@@ -48,7 +49,8 @@ class ClientState(Node):
 		self.__batch.draw()
 
 	def default_handler(self, command):
-		return any(iter(layer_and_component[1].on_command(command) for layer_and_component in self.__components.values()))
+		return any(
+			iter(layer_and_component[1].on_command(command) for layer_and_component in self.__components.values()))
 
 	def __create_groups_for_layer(self, layer):
 		if not self.__groups[layer * Config()['group_count']]:
@@ -60,7 +62,7 @@ class ClientState(Node):
 
 	def __reset_rendering(self):
 		self.__batch = pyglet.graphics.Batch()
-		self.__groups = [None for i in range(Config()['group_count'] * TOTAL_LAYERS)]
+		self.__groups = [None] * Config()['group_count'] * TOTAL_LAYERS
 
 	def __redraw(self):
 		self.__reset_rendering()

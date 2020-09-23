@@ -1,8 +1,10 @@
 import pyglet
+
 from lattice2d.client.assets import Assets
 
-class TestAssets():
-	class TestFileTypes():
+
+class TestAssets:
+	class TestFileTypes:
 		def test_loads_jpg(self):
 			assert isinstance(Assets().common['test_jpg'], pyglet.image.Texture)
 
@@ -12,7 +14,7 @@ class TestAssets():
 		def test_loads_gif(self):
 			assert isinstance(Assets().common['test_gif'], pyglet.image.animation.Animation)
 
-	class TestLayouts():
+	class TestLayouts:
 		def test_loads_single(self):
 			assert isinstance(Assets().common['test_single'], pyglet.image.Texture)
 
@@ -21,7 +23,7 @@ class TestAssets():
 			assert isinstance(Assets().common['test_grid'][0], pyglet.image.Texture)
 			assert isinstance(Assets().common['test_grid_entry'], pyglet.image.Texture)
 
-	class TestGroups():
+	class TestGroups:
 		def test_loads_common_assets(self):
 			assert isinstance(Assets().common['test_common'], pyglet.image.Texture)
 

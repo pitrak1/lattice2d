@@ -36,7 +36,7 @@ CONFIG.update({
 		]
 	},
 	'assets': {
-		'path': os.path.join(ROOT_DIR,'assets'),
+		'path': os.path.join(ROOT_DIR, 'assets'),
 		'tiles': [],
 		'characters': {},
 		'custom': [

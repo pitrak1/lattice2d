@@ -1,24 +1,28 @@
 import types
-from lattice2d.nodes import Node, RootNode
+
 from lattice2d.command import Command
+from lattice2d.nodes import Node, RootNode
+
 
 class MyNode(Node):
 	def __init__(self):
 		super().__init__()
 		self.called = False
 
+	# noinspection PyUnusedLocal
 	def test_command_handler(self, command):
 		self.called = True
 
-class TestNode():
-	class TestOnCommand():
-		def test_calls_handler_based_on_type(self, mocker):
+
+class TestNode:
+	class TestOnCommand:
+		def test_calls_handler_based_on_type(self):
 			node = MyNode()
 			command = Command('test_command', {})
 			node.on_command(command)
 			assert node.called
 
-	class TestDefaultHandler():
+	class TestDefaultHandler:
 		def test_calls_on_command_for_all_children(self, mocker):
 			child = types.SimpleNamespace()
 			child.on_command = mocker.stub()
@@ -30,12 +34,12 @@ class TestNode():
 			node.on_command(command)
 			child.on_command.assert_called_once_with(command)
 
-		def test_returns_false_if_all_children_return_false_by_default(self, mocker):
+		def test_returns_false_if_all_children_return_false_by_default(self):
 			child_1 = types.SimpleNamespace()
-			child_1.on_command = lambda command : False
+			child_1.on_command = lambda comm: False
 
 			child_2 = types.SimpleNamespace()
-			child_2.on_command = lambda command : False
+			child_2.on_command = lambda comm: False
 
 			node = Node()
 			node.children = [child_1, child_2]
@@ -43,12 +47,12 @@ class TestNode():
 			command = Command('test_command', {})
 			assert not node.default_handler(command)
 
-		def test_returns_true_if_any_children_return_true_by_default(self, mocker):
+		def test_returns_true_if_any_children_return_true_by_default(self):
 			child_1 = types.SimpleNamespace()
-			child_1.on_command = lambda command : False
+			child_1.on_command = lambda comm: False
 
 			child_2 = types.SimpleNamespace()
-			child_2.on_command = lambda command : True
+			child_2.on_command = lambda comm: True
 
 			node = Node()
 			node.children = [child_1, child_2]
@@ -56,7 +60,7 @@ class TestNode():
 			command = Command('test_command', {})
 			assert node.default_handler(command)
 
-	class TestOnUpdate():
+	class TestOnUpdate:
 		def test_calls_on_update_for_all_children(self, mocker):
 			child = types.SimpleNamespace()
 			child.on_update = mocker.stub()
@@ -67,7 +71,7 @@ class TestNode():
 			node.on_update(1234)
 			child.on_update.assert_called_once_with(1234)
 
-	class TestOnDraw():
+	class TestOnDraw:
 		def test_calls_on_draw_for_all_children(self, mocker):
 			child = types.SimpleNamespace()
 			child.on_draw = mocker.stub()
@@ -78,7 +82,8 @@ class TestNode():
 			node.on_draw()
 			child.on_draw.assert_called_once()
 
-class TestRootNode():
+
+class TestRootNode:
 	def test_calls_on_command_on_self_for_every_command_on_update(self, mocker):
 		root_node = RootNode()
 		mocker.patch.object(root_node, 'on_command')

@@ -6,6 +6,7 @@ from lattice2d.client.components.area import Area
 from lattice2d.client.components.label import Label
 from example.constants import WINDOW_CENTER, CONSTANTS
 
+
 class ClientComponentState(ClientState):
 	def __init__(self, add_command, custom_data={}):
 		super().__init__(add_command, custom_data)
@@ -35,7 +36,7 @@ class ClientComponentState(ClientState):
 		self.register_component('test_button', 1, Button(
 			position=(WINDOW_CENTER[0] // 2, CONSTANTS['window_dimensions'][1] - 380),
 			unit_dimensions=(8, 3),
-			text='This is a 8x3 Button.', 
+			text='This is a 8x3 Button.',
 			on_click=self.button_press
 		))
 		self.register_component('button_label', 1, Label(
@@ -48,7 +49,7 @@ class ClientComponentState(ClientState):
 			color=(0, 0, 0, 255)
 		))
 		self.register_component('text_box', 1, TextBox(
-			position=(WINDOW_CENTER[0], CONSTANTS['window_dimensions'][1] - 200), 
+			position=(WINDOW_CENTER[0], CONSTANTS['window_dimensions'][1] - 200),
 			unit_width=12,
 			label_text='This is a labelled TextBox with a width of 12.',
 			max_length=25
@@ -56,13 +57,13 @@ class ClientComponentState(ClientState):
 		self.register_component('error_message_button', 1, Button(
 			position=(WINDOW_CENTER[0] * 1.5, CONSTANTS['window_dimensions'][1] - 380),
 			unit_dimensions=(8, 3),
-			text='Set TextBox error text', 
+			text='Set TextBox error text',
 			on_click=self.set_error_message
 		))
 		self.register_component('next_button', 1, Button(
 			position=(WINDOW_CENTER[0], 80),
 			unit_dimensions=(8, 3),
-			text='Continue to Next State', 
+			text='Continue to Next State',
 			on_click=self.next_state
 		))
 

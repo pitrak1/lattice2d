@@ -1,8 +1,10 @@
 import json
 
+
 def serialize(command):
-	converted = { 'type': command.type, 'data': command.data, 'status': command.status }
+	converted = {'type': command.type, 'data': command.data, 'status': command.status}
 	return json.dumps(converted) + '|'
+
 
 def deserialize(command):
 	deserialized = json.loads(command)
@@ -12,7 +14,8 @@ def deserialize(command):
 	else:
 		return Command(deserialized['type'], deserialized['data'])
 
-class Command():
+
+class Command:
 	def __init__(self, type_, data={}, status=None, connection=None):
 		self.type = type_
 		self.data = data
@@ -20,9 +23,12 @@ class Command():
 		self.connection = connection
 
 	def update_and_send(self, status=None, data=None, connection=None):
-		if status: self.status = status
-		if data: self.data.update(data)
-		if connection: self.connection = connection
+		if status:
+			self.status = status
+		if data:
+			self.data.update(data)
+		if connection:
+			self.connection = connection
 		self.connection.send(serialize(self).encode())
 
 	@classmethod

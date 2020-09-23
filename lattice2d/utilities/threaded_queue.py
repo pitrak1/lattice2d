@@ -1,7 +1,8 @@
 import threading
 from collections import deque
 
-class ThreadedQueue():
+
+class ThreadedQueue:
 	def __init__(self):
 		self.__queue = deque()
 		self.__lock = threading.Lock()

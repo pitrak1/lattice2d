@@ -1,7 +1,7 @@
-import pytest
 from lattice2d.utilities.threaded_sync import ThreadedSync
 
-class TestThreadedSync():
+
+class TestThreadedSync:
 	def test_done_returns_true_on_initialization(self):
 		sync = ThreadedSync(3)
 		assert sync.done()

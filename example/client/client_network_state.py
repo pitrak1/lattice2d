@@ -4,6 +4,7 @@ from lattice2d.client.components.label import Label
 from example.constants import WINDOW_CENTER, CONSTANTS
 from lattice2d.command import Command
 
+
 class ClientNetworkState(ClientState):
 	def __init__(self, add_command, custom_data={}):
 		self.response_count = 0
@@ -20,7 +21,7 @@ class ClientNetworkState(ClientState):
 		self.register_component('send_button', 0, Button(
 			position=(WINDOW_CENTER[0] // 2, CONSTANTS['window_dimensions'][1] - 380),
 			unit_dimensions=(8, 3),
-			text='Send Network Command', 
+			text='Send Network Command',
 			on_click=self.button_press
 		))
 		self.register_component('info_label', 0, Label(
@@ -49,11 +50,11 @@ class ClientNetworkState(ClientState):
 		# However, because we want to show off how the user would actually use this repo, we need
 		# to create a game context to see the functionality of our state.  So we create a game,
 		# create a player, and then have the player join the game.
-		
+
 		if self.response_count == 0:
-			self.add_command(Command('create_player', { 'player_name': 'Test Player' }, 'pending'))
-			self.add_command(Command('create_game', { 'game_name': 'Test Game' }, 'pending'))
-			self.add_command(Command('join_game', { 'game_name': 'Test Game' }, 'pending'))
+			self.add_command(Command('create_player', {'player_name': 'Test Player'}, 'pending'))
+			self.add_command(Command('create_game', {'game_name': 'Test Game'}, 'pending'))
+			self.add_command(Command('join_game', {'game_name': 'Test Game'}, 'pending'))
 		self.add_command(Command('some_network_command', status='pending'))
 
 	def some_network_command_handler(self, command):
