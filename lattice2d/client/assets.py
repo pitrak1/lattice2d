@@ -81,13 +81,10 @@ class Assets(InnerAssets):
 		super().__init__()
 
 		if not hasattr(self, 'common'):
-			self.__load_common()
-			self.__load_ui()
-			self.__load_characters()
-			self.__load_tiles()
-			self.__load_custom()
+			self.__load_local_assets()
+			self.__load_config_assets()
 
-	def __load_common(self):
+	def __load_local_assets(self):
 		pyglet.resource.path = [os.path.join(ROOT_DIR, 'assets')]
 		pyglet.resource.reindex()
 
@@ -95,15 +92,11 @@ class Assets(InnerAssets):
 		for entry in COMMON:
 			self.__load_asset(entry, self.common)
 
-	def __load_ui(self):
-		pyglet.resource.path = [os.path.join(ROOT_DIR, 'assets')]
-		pyglet.resource.reindex()
-
 		self.ui = {}
 		for entry in UI:
 			self.__load_asset(entry, self.ui)
 
-	def __load_characters(self):
+	def __load_config_assets(self):
 		pyglet.resource.path = [Config()['assets']['path']]
 		pyglet.resource.reindex()
 
@@ -111,17 +104,9 @@ class Assets(InnerAssets):
 		for entry in Config()['assets']['characters']:
 			self.__load_asset(entry, self.characters)
 
-	def __load_tiles(self):
-		pyglet.resource.path = [Config()['assets']['path']]
-		pyglet.resource.reindex()
-
 		self.tiles = {}
 		for entry in Config()['assets']['tiles']:
 			self.__load_asset(entry, self.tiles)
-
-	def __load_custom(self):
-		pyglet.resource.path = [Config()['assets']['path']]
-		pyglet.resource.reindex()
 
 		self.custom = {}
 		for entry in Config()['assets']['custom']:
