@@ -2,6 +2,7 @@ import pyglet
 
 from lattice2d.config import Config
 from lattice2d.nodes import Node
+from lattice2d.states import State
 
 DRAW_LAYER_BACKGROUND_0 = 0
 DRAW_LAYER_BASE_1 = 1
@@ -14,11 +15,10 @@ DRAW_LAYER_NOTIFICATIONS_6 = 6
 TOTAL_LAYERS = 7
 
 
-class ClientState(Node):
-	def __init__(self, add_command, custom_data={}):
-		super().__init__()
-		self.add_command = add_command
-		self.custom_data = custom_data
+class ClientState(State):
+	def __init__(self, state_machine, custom_data={}):
+		super().__init__(state_machine, custom_data)
+		self.add_command = state_machine.add_command
 		self.reset()
 
 	def reset(self):

@@ -8,8 +8,8 @@ from example.constants import WINDOW_CENTER, CONSTANTS
 
 
 class ClientComponentState(ClientState):
-	def __init__(self, add_command, custom_data={}):
-		super().__init__(add_command, custom_data)
+	def __init__(self, state_machine, custom_data={}):
+		super().__init__(state_machine, custom_data)
 		self.register_component('background', 0, Background(
 			asset_key='background'
 		))

@@ -2,25 +2,16 @@ from lattice2d.command import Command
 from lattice2d.config import Config
 from lattice2d.nodes import RootNode
 from lattice2d.utilities.log import log, LOG_LEVEL_INTERNAL_LOW
+from lattice2d.states import StateMachine
 
 
-class ServerGame(RootNode):
+class ServerGame(StateMachine):
 	def __init__(self, name, destroy_game):
-		super().__init__()
+		super().__init__(Config()['server_states'])
 		self.name = name
 		self.destroy_game = destroy_game
 		self.current_player_index = 0
 		self.players = []
-		self.__set_state(Config()['server_states']['starting_state'])
-
-	def __set_state(self, state, custom_data={}):
-		self.__current_state = state(self, custom_data)
-
-		state_data = next(s for s in Config()['server_states']['states'] if s['state'] == state)
-		for key, value in state_data['transitions'].items():
-			setattr(self.__current_state, key, lambda data={}: self.__set_state(value))
-
-		self._children['state'] = self.__current_state
 
 	def get_current_player(self):
 		return self.players[self.current_player_index]

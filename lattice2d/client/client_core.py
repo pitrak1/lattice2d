@@ -4,15 +4,15 @@ from lattice2d.command import Command
 from lattice2d.config import Config
 from lattice2d.network import Client
 from lattice2d.nodes import RootNode
+from lattice2d.states import StateMachine
 
 
-class ClientCore(RootNode):
+class ClientCore(StateMachine):
 	def __init__(self, config):
 		Config(config)
-		super().__init__()
+		super().__init__(Config()['client_states'])
 		self.__initialize_window()
 		self.__initialize_network()
-		self.__initialize_state_machine()
 
 	def __initialize_window(self):
 		self.__window = pyglet.window.Window(
@@ -24,18 +24,6 @@ class ClientCore(RootNode):
 	def __initialize_network(self):
 		if Config()['network']:
 			self._children['network'] = Client(self.add_command)
-
-	def __initialize_state_machine(self):
-		self.set_state(Config()['client_states']['starting_state'])
-
-	def set_state(self, state, custom_data={}):
-		self.current_state = state(self.add_command, custom_data)
-
-		state_data = next(s for s in Config()['client_states']['states'] if s['state'] == state)
-		for key, value in state_data['transitions'].items():
-			setattr(self.current_state, key, lambda data={}: self.set_state(value))
-
-		self._children['state'] = self.current_state
 
 	def on_draw(self):
 		self.__window.clear()
