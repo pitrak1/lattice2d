@@ -23,7 +23,7 @@ class ClientCore(RootNode):
 
 	def __initialize_network(self):
 		if Config()['network']:
-			self.__network = Client(self.add_command)
+			self._children['network'] = Client(self.add_command)
 
 	def __initialize_state_machine(self):
 		self.set_state(Config()['client_states']['starting_state'])
@@ -35,13 +35,11 @@ class ClientCore(RootNode):
 		for key, value in state_data['transitions'].items():
 			setattr(self.current_state, key, lambda data={}: self.set_state(value))
 
-		self.children = [self.current_state]
-		if Config()['network']:
-			self.children.append(self.__network)
+		self._children['state'] = self.current_state
 
 	def on_draw(self):
 		self.__window.clear()
-		[child.on_draw() for child in self.children]
+		[child.on_draw() for child in self._children.values()]
 
 	def run(self):
 		pyglet.clock.schedule_interval(self.on_update, 1 / 120.0)

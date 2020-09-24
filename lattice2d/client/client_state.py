@@ -22,27 +22,29 @@ class ClientState(Node):
 		self.reset()
 
 	def reset(self):
-		self.__components = {}
+		self._children = {}
+		self.__layers = {}
 		self.__reset_rendering()
 
 	def register_component(self, identifier, layer, component):
 		assert 0 <= layer <= 6
-		assert identifier not in self.__components.keys()
+		assert identifier not in self._children.keys()
 
 		self.__create_groups_for_layer(layer)
 
-		self.__components[identifier] = (layer, component)
+		self._children[identifier] = component
+		self.__layers[identifier] = layer
 		component.register(self.__batch, self.__get_groups_for_layer(layer))
 		self.__redraw()
 
 	def get_component(self, identifier):
-		assert identifier in self.__components.keys()
-		return self.__components[identifier][1]
+		assert identifier in self._children.keys()
+		return self._children[identifier]
 
 	def remove_component(self, identifier):
-		assert identifier in self.__components.keys()
+		assert identifier in self._children.keys()
 
-		del self.__components[identifier]
+		del self._children[identifier]
 		self.__redraw()
 
 	def on_draw(self):
@@ -50,7 +52,7 @@ class ClientState(Node):
 
 	def default_handler(self, command):
 		return any(
-			iter(layer_and_component[1].on_command(command) for layer_and_component in self.__components.values()))
+			iter(component.on_command(command) for component in self._children.values()))
 
 	def __create_groups_for_layer(self, layer):
 		if not self.__groups[layer * Config()['group_count']]:
@@ -67,6 +69,7 @@ class ClientState(Node):
 	def __redraw(self):
 		self.__reset_rendering()
 
-		for identifier, layer_and_component in self.__components.items():
-			self.__create_groups_for_layer(layer_and_component[0])
-			layer_and_component[1].register(self.__batch, self.__get_groups_for_layer(layer_and_component[0]))
+		for identifier, component in self._children.items():
+			layer = self.__layers[identifier]
+			self.__create_groups_for_layer(layer)
+			component.register(self.__batch, self.__get_groups_for_layer(layer))

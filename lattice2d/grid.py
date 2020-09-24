@@ -70,15 +70,17 @@ class Player(Actor):
 
 
 class Tile(GridEntity):
-	def add_actor(self, actor):
-		self.children.append(actor)
+	def add_actor(self, key, actor):
+		self._children[key] = actor
 		actor.set_grid_position(self.grid_position)
 
-	def remove_actor(self, actor):
-		assert actor in self.children
+	def remove_actor(self, key):
+		assert key in self._children.keys()
+		self._children[key].set_grid_position((None, None))
+		del self._children[key]
 
-		self.children.remove(actor)
-		actor.set_grid_position((None, None))
+	def get_actor(self, key):
+		return self._children[key]
 
 
 class TileGrid(Node):
@@ -86,50 +88,56 @@ class TileGrid(Node):
 		super().__init__()
 		self.grid_dimensions = grid_dimensions
 		for i in range(self.grid_dimensions[0] * self.grid_dimensions[1]):
-			self.children.append(EmptyTile((i % self.grid_dimensions[0], i // self.grid_dimensions[1])))
+			self._children[i] = EmptyTile((i % self.grid_dimensions[0], i // self.grid_dimensions[1]))
 		self.base_position = base_position
 		self.base_scale = 1.0
 
 	def add_adjacent_links(self, start_tile, end_tile):
 		raise NotImplementedError
 
+	def get_tile_at_position(self, grid_position):
+		return self._children[grid_position[1] * self.grid_dimensions[0] + grid_position[0]]
+
 	def add_tile(self, grid_position, tile):
 		assert 0 <= grid_position[0] < self.grid_dimensions[0]
 		assert 0 <= grid_position[1] < self.grid_dimensions[1]
 
-		self.children[grid_position[1] * self.grid_dimensions[0] + grid_position[0]] = tile
+		self._children[grid_position[1] * self.grid_dimensions[0] + grid_position[0]] = tile
 		tile.set_grid_position(grid_position)
 		tile.base_position = self.base_position
 
 		if grid_position[1] + 1 < self.grid_dimensions[1]:
-			up_tile = self.children[(grid_position[1] + 1) * self.grid_dimensions[0] + grid_position[0]]
+			up_tile = self._children[(grid_position[1] + 1) * self.grid_dimensions[0] + grid_position[0]]
 			self.add_adjacent_links(tile, up_tile)
 
 		if grid_position[0] + 1 < self.grid_dimensions[0]:
-			right_tile = self.children[grid_position[1] * self.grid_dimensions[0] + (grid_position[0] + 1)]
+			right_tile = self._children[grid_position[1] * self.grid_dimensions[0] + (grid_position[0] + 1)]
 			self.add_adjacent_links(tile, right_tile)
 
 		if grid_position[1] - 1 >= 0:
-			down_tile = self.children[(grid_position[1] - 1) * self.grid_dimensions[0] + grid_position[0]]
+			down_tile = self._children[(grid_position[1] - 1) * self.grid_dimensions[0] + grid_position[0]]
 			self.add_adjacent_links(tile, down_tile)
 
 		if grid_position[0] - 1 >= 0:
-			left_tile = self.children[grid_position[1] * self.grid_dimensions[0] + (grid_position[0] - 1)]
+			left_tile = self._children[grid_position[1] * self.grid_dimensions[0] + (grid_position[0] - 1)]
 			self.add_adjacent_links(tile, left_tile)
 
-	def add_actor(self, grid_position, actor):
+	def add_actor(self, grid_position, key, actor):
 		assert 0 <= grid_position[0] < self.grid_dimensions[0]
 		assert 0 <= grid_position[1] < self.grid_dimensions[1]
-		assert isinstance(self.children[grid_position[1] * self.grid_dimensions[0] + grid_position[0]], Tile)
-		self.children[grid_position[1] * self.grid_dimensions[0] + grid_position[0]].add_actor(actor)
+		assert isinstance(self._children[grid_position[1] * self.grid_dimensions[0] + grid_position[0]], Tile)
+		self._children[grid_position[1] * self.grid_dimensions[0] + grid_position[0]].add_actor(key, actor)
 		actor.base_position = self.base_position
 
-	def move_actor(self, grid_position, actor):
-		assert 0 <= grid_position[0] < self.grid_dimensions[0] and 0 <= grid_position[1] < self.grid_dimensions[1]
-		assert isinstance(self.children[grid_position[1] * self.grid_dimensions[0] + grid_position[0]], Tile)
+	def move_actor(self, start_grid_position, end_grid_position, key):
+		assert 0 <= start_grid_position[0] < self.grid_dimensions[0] and 0 <= start_grid_position[1] < self.grid_dimensions[1]
+		assert 0 <= end_grid_position[0] < self.grid_dimensions[0] and 0 <= end_grid_position[1] < \
+		       self.grid_dimensions[1]
+		assert isinstance(self._children[end_grid_position[1] * self.grid_dimensions[0] + end_grid_position[0]], Tile)
 
-		self.children[actor.grid_position[1] * self.grid_dimensions[0] + actor.grid_position[0]].remove_actor(actor)
-		self.children[grid_position[1] * self.grid_dimensions[0] + grid_position[0]].add_actor(actor)
+		actor = self._children[start_grid_position[1] * self.grid_dimensions[0] + start_grid_position[0]].get_actor(key)
+		self._children[start_grid_position[1] * self.grid_dimensions[0] + start_grid_position[0]].remove_actor(key)
+		self._children[end_grid_position[1] * self.grid_dimensions[0] + end_grid_position[0]].add_actor(key, actor)
 
 	def adjust_grid_position_handler(self, command):
 		self.base_position = (

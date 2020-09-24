@@ -13,7 +13,7 @@ class ServerCore(RootNode):
 		super().__init__()
 		self.test = test
 		if not test:
-			self.server = Server(self.add_command)
+			self.network = Server(self.add_command)
 		self.players = []
 
 	def run(self):
@@ -21,17 +21,17 @@ class ServerCore(RootNode):
 			self.__on_update_loop()
 		self.update_thread = threading.Thread(target=self.__on_update_loop, daemon=True)
 		self.update_thread.start()
-		self.server.run()
+		self.network.run()
 
 	def __on_update_loop(self):
 		while True:
 			self.on_update()
 
 	def destroy_game(self, game_name):
-		game = next(g for g in self.children if g.name == game_name)
-		assert game and len(game.players) == 0
+		assert game_name in self._children.keys()
+		assert len(self._children[game_name].players) == 0
 		log(f'Removing game {game_name} from game list', LOG_LEVEL_INTERNAL_LOW)
-		self.children.remove(game)
+		del self._children[game_name]
 
 	def destroy_game_handler(self, command):
 		game_name = command.data['game_name']
@@ -43,17 +43,17 @@ class ServerCore(RootNode):
 		command.update_and_send(status='success')
 
 	def create_game_handler(self, command):
-		self.children.append(ServerGame(command.data['game_name'], self.destroy_game))
+		self._children[command.data['game_name']] = ServerGame(command.data['game_name'], self.destroy_game)
 		command.update_and_send(status='success')
 
 	def get_games_handler(self, command):
-		parsed_games = [(game.name, len(game.players)) for game in self.children]
+		parsed_games = [(game.name, len(game.players)) for game in self._children.values()]
 		command.update_and_send(status='success', data={'games': parsed_games})
 
 	def join_game_handler(self, command):
 		game_name = command.data['game_name']
 		player = next(p for p in self.players if p.connection == command.connection)
-		game = next(g for g in self.children if g.name == game_name)
+		game = next(g for g in self._children.values() if g.name == game_name)
 		log(f'Adding {player.name} to game {game_name} in game list', LOG_LEVEL_INTERNAL_LOW)
 		game.add_player(player)
 		command.update_and_send(status='success')
@@ -70,4 +70,4 @@ class ServerCore(RootNode):
 			player.game.add_command(command)
 		else:
 			log(f'Adding command type {command.type}', LOG_LEVEL_INTERNAL_LOW)
-			self.command_queue.append(command)
+			self._command_queue.append(command)

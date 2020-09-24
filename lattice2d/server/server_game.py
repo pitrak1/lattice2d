@@ -20,7 +20,7 @@ class ServerGame(RootNode):
 		for key, value in state_data['transitions'].items():
 			setattr(self.__current_state, key, lambda data={}: self.__set_state(value))
 
-		self.children = [self.__current_state]
+		self._children['state'] = self.__current_state
 
 	def get_current_player(self):
 		return self.players[self.current_player_index]

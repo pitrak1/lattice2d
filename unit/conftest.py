@@ -21,7 +21,7 @@ TEST_CONFIG = {
 		'size': 100
 	},
 	'player_class': Player,
-	'command_types': ['test_command'],
+	'command_types': ['test_command', 'test_command_2'],
 	'client_states': {},
 	'server_states': {
 		'starting_state': ServerState,

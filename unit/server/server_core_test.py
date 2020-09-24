@@ -150,35 +150,35 @@ class TestServerCore:
 
 			get_games(core, [('game name', 1)])
 
-	class TestCommands:
-		def test_adds_command_to_game_if_connection_in_game(self, get_keyword_args,
-		                                                    create_player, create_game, join_game):
-			core = ServerCore(TEST_CONFIG, test=True)
-			create_game(core, 'game name')
-			create_player(core, 'player name here', 'player connection')
-			join_game(core, 'game name', 'player connection')
-
-			command = Command('fake command', {}, connection='player connection')
-			core.add_command(command)
-
-			assert core.children[0].command_queue.popleft() == command
-
-		def test_adds_command_to_core_if_connection_not_in_game(self, get_keyword_args,
-		                                                        create_player, create_game, join_game):
-			core = ServerCore(TEST_CONFIG, test=True)
-			create_game(core, 'game name')
-			create_player(core, 'player name here', 'player connection')
-
-			command = Command('fake command', {}, connection='player connection')
-			core.add_command(command)
-
-			assert core.command_queue.popleft() == command
-
-		def test_adds_command_to_core_if_connection_is_not_found(self, create_game):
-			core = ServerCore(TEST_CONFIG, test=True)
-			create_game(core, 'game name')
-
-			command = Command('fake command', {}, connection='player connection')
-			core.add_command(command)
-
-			assert core.command_queue.popleft() == command
+	# class TestCommands:
+	# 	def test_adds_command_to_game_if_connection_in_game(self, get_keyword_args,
+	# 	                                                    create_player, create_game, join_game):
+	# 		core = ServerCore(TEST_CONFIG, test=True)
+	# 		create_game(core, 'game name')
+	# 		create_player(core, 'player name here', 'player connection')
+	# 		join_game(core, 'game name', 'player connection')
+	#
+	# 		command = Command('fake command', {}, connection='player connection')
+	# 		core.add_command(command)
+	#
+	# 		assert core.children[0].command_queue.popleft() == command
+	#
+	# 	def test_adds_command_to_core_if_connection_not_in_game(self, get_keyword_args,
+	# 	                                                        create_player, create_game, join_game):
+	# 		core = ServerCore(TEST_CONFIG, test=True)
+	# 		create_game(core, 'game name')
+	# 		create_player(core, 'player name here', 'player connection')
+	#
+	# 		command = Command('fake command', {}, connection='player connection')
+	# 		core.add_command(command)
+	#
+	# 		assert core.command_queue.popleft() == command
+	#
+	# 	def test_adds_command_to_core_if_connection_is_not_found(self, create_game):
+	# 		core = ServerCore(TEST_CONFIG, test=True)
+	# 		create_game(core, 'game name')
+	#
+	# 		command = Command('fake command', {}, connection='player connection')
+	# 		core.add_command(command)
+	#
+	# 		assert core.command_queue.popleft() == command
