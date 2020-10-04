@@ -9,7 +9,7 @@ class ServerState(State):
 			self.state_machine.broadcast_players()
 
 	def leave_game_handler(self, command):
-		self.state_machine.remove_player(self.players.find_by_connection(command.connection))
+		self.state_machine.remove_player(next(p for p in self.state_machine.players if p.connection == command.connection))
 
 	def get_current_player_handler(self, command):
 		player = next(iter(p for p in self.state_machine.players if p.connection == command.connection), False)

@@ -14,7 +14,8 @@ class StateMachine(RootNode):
 
 		data = next(s for s in self.state_data['states'] if s['state'] == state)
 		for key, value in data['transitions'].items():
-			setattr(self._current_state, key, lambda data={}: self.set_state(value))
+			transition = Transition(self, key, value)
+			setattr(self._current_state, key, transition.run)
 
 		self._children['state'] = self._current_state
 
@@ -23,3 +24,12 @@ class State(Node):
 		super().__init__()
 		self.state_machine = state_machine
 		self.custom_data = custom_data
+
+class Transition():
+	def __init__(self, core, key, value):
+		self.core = core
+		self.key = key
+		self.value = value
+
+	def run(self, custom_data={}):
+		self.core.set_state(self.value, custom_data)

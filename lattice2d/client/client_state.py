@@ -47,6 +47,11 @@ class ClientState(State):
 		del self._children[identifier]
 		self.__redraw()
 
+	def conditionally_remove_component(self, identifier):
+		if identifier in self._children.keys():
+			del self._children[identifier]
+			self.__redraw()
+
 	def on_draw(self):
 		self.__batch.draw()
 
