@@ -262,7 +262,6 @@ class TestTile:
 	class TestRemoveActor:
 		def test_throws_error_if_actor_is_not_in_children(self):
 			tile = Tile()
-			actor = Actor()
 			with pytest.raises(AssertionError):
 				tile.remove_actor('key')
 

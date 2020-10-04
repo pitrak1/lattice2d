@@ -19,9 +19,11 @@ class MyNode(Node):
 	def get_child(self, key):
 		return self._children[key]
 
+
 class MyRootNode(RootNode):
 	def add_child(self, key, child):
 		self._children[key] = child
+
 
 class TestNode:
 	class TestOnCommand:
