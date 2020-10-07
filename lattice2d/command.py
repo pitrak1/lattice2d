@@ -8,11 +8,7 @@ def serialize(command):
 
 def deserialize(command):
 	deserialized = json.loads(command)
-
-	if 'status' in deserialized.keys():
-		return Command(deserialized['type'], deserialized['data'], deserialized['status'], None)
-	else:
-		return Command(deserialized['type'], deserialized['data'])
+	return Command(deserialized['type'], deserialized['data'], deserialized.get('status'), None)
 
 
 class Command:

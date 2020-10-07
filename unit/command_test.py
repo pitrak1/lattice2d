@@ -1,6 +1,15 @@
 import types
+import pytest
 
 from lattice2d.command import Command, serialize, deserialize
+
+@pytest.fixture
+def create_connection():
+	def _create_connection(mocker):
+		connection = types.SimpleNamespace()
+		connection.send = mocker.stub()
+		return connection
+	return _create_connection
 
 
 class TestSerializeDeserialize:
@@ -18,7 +27,7 @@ class TestSerializeDeserialize:
 		assert result.data == command.data
 		assert result.status == command.status
 
-	def test_removes_connection_from_commands(self):
+	def test_deserializing_removes_connection_from_commands(self):
 		command = Command('some_command_type', {
 			'key1': True,
 			'key2': None,
@@ -49,18 +58,15 @@ class TestSerializeDeserialize:
 
 
 class TestCommand:
-	def test_sends(self, mocker):
-		connection = types.SimpleNamespace()
-		connection.send = mocker.stub()
+	def test_sends(self, mocker, create_connection):
+		connection = create_connection(mocker)
 		command = Command('some_command_type', {'key1': True}, 'status', connection)
 		command.update_and_send()
 		connection.send.assert_called_once_with(serialize(command).encode())
 
-	def test_updates_and_sends(self, mocker):
-		connection = types.SimpleNamespace()
-		connection.send = mocker.stub()
-		other_connection = types.SimpleNamespace()
-		other_connection.send = mocker.stub()
+	def test_updates_and_sends(self, mocker, create_connection):
+		connection = create_connection(mocker)
+		other_connection = create_connection(mocker)
 		command = Command('some_command_type', {'key1': True}, 'status', connection)
 		command.update_and_send(status='other_status', data={'key2': False}, connection=other_connection)
 		assert command.status == 'other_status'
@@ -68,9 +74,8 @@ class TestCommand:
 		other_connection.send.assert_called_once_with(serialize(command).encode())
 		connection.send.assert_not_called()
 
-	def test_creates_and_sends(self, mocker):
-		connection = types.SimpleNamespace()
-		connection.send = mocker.stub()
+	def test_creates_and_sends(self, mocker, create_connection):
+		connection = create_connection(mocker)
 		command = Command.create_and_send('some_command_type', {'key1': True}, 'status', connection)
 		assert command.type == 'some_command_type'
 		assert command.status == 'status'
