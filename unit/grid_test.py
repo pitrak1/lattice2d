@@ -5,8 +5,6 @@ from lattice2d.grid import \
 	GridEntity, \
 	TileGrid, \
 	Tile, \
-	Actor, \
-	EmptyTile, \
 	get_distance, \
 	get_direction, \
 	reverse_direction, \
@@ -14,38 +12,7 @@ from lattice2d.grid import \
 	RIGHT, \
 	DOWN, \
 	LEFT
-
-
-class TestGridEntity:
-	def test_sets_grid_position(self):
-		entity = GridEntity()
-		entity.set_grid_position((2, 3))
-		assert entity.grid_position == (2, 3)
-
-	def test_adjusts_base_position(self):
-		entity = GridEntity()
-		command = Command('adjust_grid_position', {'base_position': (1, 2)})
-		entity.on_command(command)
-		assert entity.base_position == (1, 2)
-
-	def test_adjusts_base_scale(self):
-		entity = GridEntity()
-		command = Command('adjust_grid_scale', {'base_scale': 1.5})
-		entity.on_command(command)
-		assert entity.base_scale == 1.5
-
-	def test_gets_applied_x_position(self):
-		entity = GridEntity()
-		entity.base_scale = 2
-		entity.base_position = (5, 10)
-		assert entity.get_scaled_x_position(3, 40) == (3 * 100 + 40) * 2 + 5
-
-	def test_gets_applied_y_position(self):
-		entity = GridEntity()
-		entity.base_scale = 2
-		entity.base_position = (5, 10)
-		assert entity.get_scaled_y_position(2, 50) == (2 * 100 + 50) * 2 + 10
-
+from lattice2d.config import Config
 
 class TestGetDistance:
 	def test_returns_distance_if_zero(self):
@@ -77,12 +44,68 @@ class TestReverseDirection:
 		assert reverse_direction(DOWN) == UP
 		assert reverse_direction(LEFT) == RIGHT
 
+class TestGridEntity:
+	def test_gets_and_sets_grid_position(self):
+		entity = GridEntity()
+		entity.set_grid_position((2, 3))
+		assert entity.get_grid_position() == (2, 3)
+
+	def test_gets_scaled_position_from_base_position_and_scale(self):
+		entity = GridEntity()
+		entity.set_grid_position((2, 3))
+
+		command = Command('adjust_grid_position', {'base_position': (1, 2)})
+		entity.on_command(command)
+
+		command = Command('adjust_grid_scale', {'base_scale': 1.5})
+		entity.on_command(command)
+
+		(x, y) = entity.get_scaled_position((4, 5), (100, 200))
+		assert x == (((2 + 4) * Config()['grid']['size'] + 100) * 1.5) + 1
+		assert y == (((3 + 5) * Config()['grid']['size'] + 200) * 1.5) + 2
+
+class TestTile:
+	class TestAddActor:
+		def test_adds_actor_to_children(self):
+			tile = Tile()
+			actor = GridEntity()
+			tile.add_actor('some_key', actor)
+			assert tile.get_actor('some_key') == actor
+
+		def test_sets_grid_position_of_actor(self):
+			tile = Tile()
+			tile.set_grid_position((1, 2))
+			actor = GridEntity()
+			tile.add_actor('key', actor)
+			assert actor.grid_position == (1, 2)
+
+	class TestRemoveActor:
+		def test_throws_error_if_actor_is_not_in_children(self):
+			tile = Tile()
+			with pytest.raises(AssertionError):
+				tile.remove_actor('key')
+
+		def test_removes_actor_from_children(self):
+			tile = Tile()
+			actor = GridEntity()
+			tile.add_actor('key', actor)
+			tile.remove_actor('key')
+			with pytest.raises(KeyError):
+				assert tile.get_actor('key')
+
+		def test_clears_actor_grid_position(self):
+			tile = Tile()
+			tile.set_grid_position((1, 2))
+			actor = GridEntity()
+			tile.add_actor('key', actor)
+			tile.remove_actor('key')
+			assert actor.grid_position == (None, None)
 
 class TestTileGrid:
 	def test_initializes_empty_grid(self):
 		grid = TileGrid((5, 5))
-		assert isinstance(grid.get_tile_at_position((0, 0)), EmptyTile)
-		assert isinstance(grid.get_tile_at_position((4, 4)), EmptyTile)
+		assert isinstance(grid.get_tile_at_position((0, 0)), GridEntity)
+		assert isinstance(grid.get_tile_at_position((4, 4)), GridEntity)
 
 	class TestAddTile:
 		def test_throws_error_if_indices_out_of_bounds(self):
@@ -147,7 +170,7 @@ class TestTileGrid:
 			tile = Tile()
 			grid.add_tile((3, 3), tile)
 			mocker.patch.object(tile, 'add_actor')
-			actor = Actor()
+			actor = GridEntity()
 			grid.add_actor((3, 3), 'key', actor)
 			tile.add_actor.assert_called_once_with('key', actor)
 
@@ -180,7 +203,7 @@ class TestTileGrid:
 			mocker.patch.object(end_tile, 'add_actor')
 			grid.add_tile((3, 4), end_tile)
 
-			actor = Actor()
+			actor = GridEntity()
 			grid.add_actor((3, 3), 'key', actor)
 
 			grid.move_actor((3, 3), (3, 4), 'key')
@@ -198,19 +221,13 @@ class TestTileGrid:
 			mocker.patch.object(end_tile, 'add_actor')
 			grid.add_tile((3, 4), end_tile)
 
-			actor = Actor()
+			actor = GridEntity()
 			grid.add_actor((3, 3), 'key', actor)
 
 			grid.move_actor((3, 3), (3, 4), 'key')
 			end_tile.add_actor.assert_called_once_with('key', actor)
 
 	class TestAdjustGridPositionHandler:
-		def test_adjust_base_position(self):
-			grid = TileGrid((5, 5))
-			command = Command('adjust_grid_position', {'adjust': (30, 40)})
-			grid.on_command(command)
-			assert grid.base_position == (30, 40)
-
 		def test_updates_the_command_and_sends_to_default_handler(self, mocker, get_positional_args):
 			grid = TileGrid((5, 5))
 			mocker.patch.object(grid, 'default_handler')
@@ -219,12 +236,6 @@ class TestTileGrid:
 			assert get_positional_args(grid.default_handler, 0, 0).data['base_position'] == (30, 40)
 
 	class TestAdjustGridScaleHandler:
-		def test_adjust_base_scale(self):
-			grid = TileGrid((5, 5))
-			command = Command('adjust_grid_scale', {'adjust': 1.5})
-			grid.on_command(command)
-			assert grid.base_scale == 1.5
-
 		def test_updates_the_command_and_sends_to_default_handler(self, mocker, get_positional_args):
 			grid = TileGrid((5, 5))
 			mocker.patch.object(grid, 'default_handler')
@@ -244,39 +255,4 @@ class TestTileGrid:
 			assert get_positional_args(grid.default_handler, 0, 0).data['y'] == 600
 
 
-class TestTile:
-	class TestAddActor:
-		def test_adds_actor_to_children(self):
-			tile = Tile()
-			actor = Actor()
-			tile.add_actor('some_key', actor)
-			assert tile.get_actor('some_key') == actor
 
-		def test_sets_grid_position_of_actor(self):
-			tile = Tile()
-			tile.set_grid_position((1, 2))
-			actor = Actor()
-			tile.add_actor('key', actor)
-			assert actor.grid_position == (1, 2)
-
-	class TestRemoveActor:
-		def test_throws_error_if_actor_is_not_in_children(self):
-			tile = Tile()
-			with pytest.raises(AssertionError):
-				tile.remove_actor('key')
-
-		def test_removes_actor_from_children(self):
-			tile = Tile()
-			actor = Actor()
-			tile.add_actor('key', actor)
-			tile.remove_actor('key')
-			with pytest.raises(KeyError):
-				assert tile.get_actor('key')
-
-		def test_clears_actor_grid_position(self):
-			tile = Tile()
-			tile.set_grid_position((1, 2))
-			actor = Actor()
-			tile.add_actor('key', actor)
-			tile.remove_actor('key')
-			assert actor.grid_position == (None, None)

@@ -34,6 +34,9 @@ class GridEntity(Node):
 		self.grid_position = grid_position
 		self.base_position = base_position
 		self.base_scale = 1.0
+		
+	def get_grid_position(self):
+		return self.grid_position
 
 	def set_grid_position(self, grid_position):
 		self.grid_position = grid_position
@@ -46,22 +49,13 @@ class GridEntity(Node):
 		self.base_scale = command.data['base_scale']
 		self.default_handler(command)
 
-	def get_scaled_x_position(self, grid_x, offset_x):
-		return ((grid_x * Config()['grid']['size'] + offset_x) * self.base_scale) + self.base_position[0]
-
-	def get_scaled_y_position(self, grid_y, offset_y):
-		return ((grid_y * Config()['grid']['size'] + offset_y) * self.base_scale) + self.base_position[1]
-
-
-class Actor(GridEntity):
-	pass
+	def get_scaled_position(self, grid_offset, raw_offset):
+		x = (((self.grid_position[0] + grid_offset[0]) * Config()['grid']['size'] + raw_offset[0]) * self.base_scale) + self.base_position[0]
+		y = (((self.grid_position[1] + grid_offset[1]) * Config()['grid']['size'] + raw_offset[1]) * self.base_scale) + self.base_position[1]
+		return (x, y)
 
 
-class EmptyTile(GridEntity):
-	pass
-
-
-class Player(Actor):
+class Player(GridEntity):
 	def __init__(self, name, connection=None, game=None, grid_position=(None, None), base_position=(0, 0)):
 		super().__init__(grid_position, base_position)
 		self.name = name
@@ -86,9 +80,9 @@ class Tile(GridEntity):
 class TileGrid(Node):
 	def __init__(self, grid_dimensions, base_position=(0, 0)):
 		super().__init__()
-		self.grid_dimensions = grid_dimensions
-		for i in range(self.grid_dimensions[0] * self.grid_dimensions[1]):
-			self._children[i] = EmptyTile((i % self.grid_dimensions[0], i // self.grid_dimensions[1]))
+		self._grid_dimensions = grid_dimensions
+		for i in range(self._grid_dimensions[0] * self._grid_dimensions[1]):
+			self._children[i] = GridEntity((i % self._grid_dimensions[0], i // self._grid_dimensions[1]))
 		self.base_position = base_position
 		self.base_scale = 1.0
 
@@ -96,48 +90,48 @@ class TileGrid(Node):
 		raise NotImplementedError
 
 	def get_tile_at_position(self, grid_position):
-		return self._children[grid_position[1] * self.grid_dimensions[0] + grid_position[0]]
+		return self._children[grid_position[1] * self._grid_dimensions[0] + grid_position[0]]
 
 	def add_tile(self, grid_position, tile):
-		assert 0 <= grid_position[0] < self.grid_dimensions[0]
-		assert 0 <= grid_position[1] < self.grid_dimensions[1]
+		assert 0 <= grid_position[0] < self._grid_dimensions[0]
+		assert 0 <= grid_position[1] < self._grid_dimensions[1]
 
-		self._children[grid_position[1] * self.grid_dimensions[0] + grid_position[0]] = tile
+		self._children[grid_position[1] * self._grid_dimensions[0] + grid_position[0]] = tile
 		tile.set_grid_position(grid_position)
 		tile.base_position = self.base_position
 
-		if grid_position[1] + 1 < self.grid_dimensions[1]:
-			up_tile = self._children[(grid_position[1] + 1) * self.grid_dimensions[0] + grid_position[0]]
+		if grid_position[1] + 1 < self._grid_dimensions[1]:
+			up_tile = self._children[(grid_position[1] + 1) * self._grid_dimensions[0] + grid_position[0]]
 			self.add_adjacent_links(tile, up_tile)
 
-		if grid_position[0] + 1 < self.grid_dimensions[0]:
-			right_tile = self._children[grid_position[1] * self.grid_dimensions[0] + (grid_position[0] + 1)]
+		if grid_position[0] + 1 < self._grid_dimensions[0]:
+			right_tile = self._children[grid_position[1] * self._grid_dimensions[0] + (grid_position[0] + 1)]
 			self.add_adjacent_links(tile, right_tile)
 
 		if grid_position[1] - 1 >= 0:
-			down_tile = self._children[(grid_position[1] - 1) * self.grid_dimensions[0] + grid_position[0]]
+			down_tile = self._children[(grid_position[1] - 1) * self._grid_dimensions[0] + grid_position[0]]
 			self.add_adjacent_links(tile, down_tile)
 
 		if grid_position[0] - 1 >= 0:
-			left_tile = self._children[grid_position[1] * self.grid_dimensions[0] + (grid_position[0] - 1)]
+			left_tile = self._children[grid_position[1] * self._grid_dimensions[0] + (grid_position[0] - 1)]
 			self.add_adjacent_links(tile, left_tile)
 
 	def add_actor(self, grid_position, key, actor):
-		assert 0 <= grid_position[0] < self.grid_dimensions[0]
-		assert 0 <= grid_position[1] < self.grid_dimensions[1]
-		assert isinstance(self._children[grid_position[1] * self.grid_dimensions[0] + grid_position[0]], Tile)
-		self._children[grid_position[1] * self.grid_dimensions[0] + grid_position[0]].add_actor(key, actor)
+		assert 0 <= grid_position[0] < self._grid_dimensions[0]
+		assert 0 <= grid_position[1] < self._grid_dimensions[1]
+		assert isinstance(self._children[grid_position[1] * self._grid_dimensions[0] + grid_position[0]], Tile)
+		self._children[grid_position[1] * self._grid_dimensions[0] + grid_position[0]].add_actor(key, actor)
 		actor.base_position = self.base_position
 
 	def move_actor(self, start_grid_position, end_grid_position, key):
-		assert 0 <= start_grid_position[0] < self.grid_dimensions[0] and 0 <= start_grid_position[1] < self.grid_dimensions[1]
-		assert 0 <= end_grid_position[0] < self.grid_dimensions[0] and 0 <= end_grid_position[1] < \
-		       self.grid_dimensions[1]
-		assert isinstance(self._children[end_grid_position[1] * self.grid_dimensions[0] + end_grid_position[0]], Tile)
+		assert 0 <= start_grid_position[0] < self._grid_dimensions[0] and 0 <= start_grid_position[1] < self._grid_dimensions[1]
+		assert 0 <= end_grid_position[0] < self._grid_dimensions[0] and 0 <= end_grid_position[1] < \
+		       self._grid_dimensions[1]
+		assert isinstance(self._children[end_grid_position[1] * self._grid_dimensions[0] + end_grid_position[0]], Tile)
 
-		actor = self._children[start_grid_position[1] * self.grid_dimensions[0] + start_grid_position[0]].get_actor(key)
-		self._children[start_grid_position[1] * self.grid_dimensions[0] + start_grid_position[0]].remove_actor(key)
-		self._children[end_grid_position[1] * self.grid_dimensions[0] + end_grid_position[0]].add_actor(key, actor)
+		actor = self._children[start_grid_position[1] * self._grid_dimensions[0] + start_grid_position[0]].get_actor(key)
+		self._children[start_grid_position[1] * self._grid_dimensions[0] + start_grid_position[0]].remove_actor(key)
+		self._children[end_grid_position[1] * self._grid_dimensions[0] + end_grid_position[0]].add_actor(key, actor)
 
 	def adjust_grid_position_handler(self, command):
 		self.base_position = (
