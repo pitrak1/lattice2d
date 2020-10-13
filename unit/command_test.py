@@ -3,12 +3,14 @@ import pytest
 
 from lattice2d.command import Command, serialize, deserialize
 
+
 @pytest.fixture
 def create_connection():
 	def _create_connection(mocker):
 		connection = types.SimpleNamespace()
 		connection.send = mocker.stub()
 		return connection
+
 	return _create_connection
 
 

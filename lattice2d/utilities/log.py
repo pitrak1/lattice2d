@@ -10,6 +10,7 @@ color_codes = {
 	'black': '\033[98m'
 }
 
+
 def log(value, flag):
 	config_flags = Config()['logging']
 	if flag in config_flags.keys():

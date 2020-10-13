@@ -4,6 +4,7 @@ import pytest
 from lattice2d.command import Command
 from lattice2d.nodes import Node, RootNode
 
+
 @pytest.fixture
 def create_mock_child():
 	def _create_mock_child(mocker):
@@ -12,7 +13,9 @@ def create_mock_child():
 		child.on_update = mocker.stub()
 		child.on_draw = mocker.stub()
 		return child
+
 	return _create_mock_child
+
 
 @pytest.fixture
 def create_node_with_mock_children(create_mock_child):
@@ -26,7 +29,9 @@ def create_node_with_mock_children(create_mock_child):
 			children.append(child)
 
 		return node, children
+
 	return _create_node_with_mock_children
+
 
 @pytest.fixture
 def create_root_node_with_mock_children(create_mock_child):
@@ -40,6 +45,7 @@ def create_root_node_with_mock_children(create_mock_child):
 			children.append(child)
 
 		return node, children
+
 	return _create_node_with_mock_children
 
 

@@ -50,9 +50,11 @@ class GridEntity(Node):
 		self.default_handler(command)
 
 	def get_scaled_position(self, grid_offset, raw_offset):
-		x = (((self.grid_position[0] + grid_offset[0]) * Config()['grid']['size'] + raw_offset[0]) * self.base_scale) + self.base_position[0]
-		y = (((self.grid_position[1] + grid_offset[1]) * Config()['grid']['size'] + raw_offset[1]) * self.base_scale) + self.base_position[1]
-		return (x, y)
+		x = (((self.grid_position[0] + grid_offset[0]) * Config()['grid']['size'] + raw_offset[0])
+		     * self.base_scale) + self.base_position[0]
+		y = (((self.grid_position[1] + grid_offset[1]) * Config()['grid']['size'] + raw_offset[1])
+		     * self.base_scale) + self.base_position[1]
+		return x, y
 
 
 class Player(GridEntity):
@@ -124,7 +126,8 @@ class TileGrid(Node):
 		actor.base_position = self.base_position
 
 	def move_actor(self, start_grid_position, end_grid_position, key):
-		assert 0 <= start_grid_position[0] < self._grid_dimensions[0] and 0 <= start_grid_position[1] < self._grid_dimensions[1]
+		assert 0 <= start_grid_position[0] < self._grid_dimensions[0] \
+		       and 0 <= start_grid_position[1] < self._grid_dimensions[1]
 		assert 0 <= end_grid_position[0] < self._grid_dimensions[0] and 0 <= end_grid_position[1] < \
 		       self._grid_dimensions[1]
 		assert isinstance(self._children[end_grid_position[1] * self._grid_dimensions[0] + end_grid_position[0]], Tile)

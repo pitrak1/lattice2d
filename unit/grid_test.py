@@ -14,6 +14,7 @@ from lattice2d.grid import \
 	LEFT
 from lattice2d.config import Config
 
+
 class TestGetDistance:
 	def test_returns_distance_if_zero(self):
 		assert get_distance((1, 1), (1, 1)) == 0
@@ -44,6 +45,7 @@ class TestReverseDirection:
 		assert reverse_direction(DOWN) == UP
 		assert reverse_direction(LEFT) == RIGHT
 
+
 class TestGridEntity:
 	def test_gets_and_sets_grid_position(self):
 		entity = GridEntity()
@@ -63,6 +65,7 @@ class TestGridEntity:
 		(x, y) = entity.get_scaled_position((4, 5), (100, 200))
 		assert x == (((2 + 4) * Config()['grid']['size'] + 100) * 1.5) + 1
 		assert y == (((3 + 5) * Config()['grid']['size'] + 200) * 1.5) + 2
+
 
 class TestTile:
 	class TestAddActor:
@@ -100,6 +103,7 @@ class TestTile:
 			tile.add_actor('key', actor)
 			tile.remove_actor('key')
 			assert actor.grid_position == (None, None)
+
 
 class TestTileGrid:
 	def test_initializes_empty_grid(self):
@@ -253,6 +257,3 @@ class TestTileGrid:
 			grid.on_command(command)
 			assert get_positional_args(grid.default_handler, 0, 0).data['x'] == 200
 			assert get_positional_args(grid.default_handler, 0, 0).data['y'] == 600
-
-
-
