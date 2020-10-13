@@ -1,7 +1,7 @@
 from lattice2d.command import Command
 from lattice2d.config import Config
 from lattice2d.nodes import RootNode
-from lattice2d.utilities.log import log, LOG_LEVEL_INTERNAL_LOW
+from lattice2d.utilities.log import log
 from lattice2d.states import StateMachine
 
 
@@ -21,7 +21,7 @@ class ServerGame(StateMachine):
 
 	def add_player(self, player, host=False):
 		assert player not in self.players
-		log(f'Adding {player.name} to game {self.name}', LOG_LEVEL_INTERNAL_LOW)
+		log(f'Adding {player.name} to game {self.name}', 'lattice2d_core')
 		player.game = self
 		player.host = host
 		self.players.append(player)
@@ -29,7 +29,7 @@ class ServerGame(StateMachine):
 
 	def remove_player(self, player):
 		assert player in self.players
-		log(f'Removing {player.name} from game {self.name}', LOG_LEVEL_INTERNAL_LOW)
+		log(f'Removing {player.name} from game {self.name}', 'lattice2d_core')
 		player.game = None
 		self.players.remove(player)
 		if self.players:

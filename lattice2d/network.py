@@ -4,7 +4,7 @@ import threading
 from lattice2d.command import deserialize
 from lattice2d.config import Config
 from lattice2d.nodes import Node
-from lattice2d.utilities.log import log, LOG_LEVEL_INTERNAL_HIGH
+from lattice2d.utilities.log import log
 
 
 class Network(Node):
@@ -19,7 +19,7 @@ class Network(Node):
 				break
 			command_strings = received.decode()[:-1].split('|')
 			for command in command_strings:
-				log(f'Received {command}', LOG_LEVEL_INTERNAL_HIGH)
+				log(f'Received {command}', 'lattice2d_network')
 				result = deserialize(command)
 				result.connection = connection
 				self.add_command(result)

@@ -4,7 +4,7 @@ from lattice2d.config import Config
 from lattice2d.network import Server
 from lattice2d.nodes import RootNode
 from lattice2d.server.server_game import ServerGame
-from lattice2d.utilities.log import log, LOG_LEVEL_INTERNAL_LOW
+from lattice2d.utilities.log import log
 
 
 class ServerCore(RootNode):
@@ -30,7 +30,7 @@ class ServerCore(RootNode):
 	def destroy_game(self, game_name):
 		assert game_name in self._children.keys()
 		assert len(self._children[game_name].players) == 0
-		log(f'Removing game {game_name} from game list', LOG_LEVEL_INTERNAL_LOW)
+		log(f'Removing game {game_name} from game list', 'lattice2d_core')
 		del self._children[game_name]
 
 	def destroy_game_handler(self, command):
@@ -54,7 +54,7 @@ class ServerCore(RootNode):
 		game_name = command.data['game_name']
 		player = next(p for p in self.players if p.connection == command.connection)
 		game = next(g for g in self._children.values() if g.name == game_name)
-		log(f'Adding {player.name} to game {game_name} in game list', LOG_LEVEL_INTERNAL_LOW)
+		log(f'Adding {player.name} to game {game_name} in game list', 'lattice2d_core')
 		game.add_player(player)
 		command.update_and_send(status='success')
 
@@ -66,8 +66,8 @@ class ServerCore(RootNode):
 	def add_command(self, command):
 		player = next(iter(p for p in self.players if p.connection == command.connection), False)
 		if player and player.game:
-			log(f'Adding command type {command.type} to game {player.game.name}', LOG_LEVEL_INTERNAL_LOW)
+			log(f'Adding command type {command.type} to game {player.game.name}', 'lattice2d_core')
 			player.game.add_command(command)
 		else:
-			log(f'Adding command type {command.type}', LOG_LEVEL_INTERNAL_LOW)
+			log(f'Adding command type {command.type}', 'lattice2d_core')
 			self._command_queue.append(command)

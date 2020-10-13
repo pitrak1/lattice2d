@@ -9,7 +9,7 @@ from lattice2d.server.server_state import ServerState
 
 TEST_CONFIG = {
 	'window_dimensions': (100, 100),
-	'log_level': 3,
+	'logging': {},
 	'network': {
 		'ip_address': '0.0.0.0',
 		'port': 8080

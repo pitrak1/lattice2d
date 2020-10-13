@@ -53,13 +53,6 @@ FULL_COMMAND_TYPES = [
 	'text_motion_select'
 ]
 
-TEST_CONFIG = {
-	'command_types': [
-		'some_command_type',
-		'some_other_command_type'
-	]
-}
-
 UP = 0
 RIGHT = 1
 DOWN = 2

@@ -11,6 +11,10 @@ CONFIG = copy.deepcopy(CONSTANTS)
 CONFIG.update({
 	'command_types': ['some_network_command'],
 	'player_class': Player,
+	'logging': {
+		'lattice2d_core': 'red',
+		'lattice2d_network': 'cyan'
+	},
 	'client_states': {
 		'starting_state': ClientComponentState,
 		'states': [

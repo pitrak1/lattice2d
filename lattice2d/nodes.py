@@ -1,5 +1,5 @@
 from lattice2d.config import Config
-from lattice2d.utilities.log import log, LOG_LEVEL_INTERNAL_LOW
+from lattice2d.utilities.log import log
 from lattice2d.utilities.threaded_queue import ThreadedQueue
 
 
@@ -37,12 +37,12 @@ class RootNode(Node):
 		self._command_queue = ThreadedQueue()
 
 	def add_command(self, command):
-		log(f'Adding command type {command.type}', LOG_LEVEL_INTERNAL_LOW)
+		log(f'Adding command type {command.type}', 'lattice2d_core')
 		self._command_queue.append(command)
 
 	def on_update(self, dt=None):
 		while self._command_queue.has_elements():
 			command = self._command_queue.popleft()
-			log(f'Handling command type {command.type}', LOG_LEVEL_INTERNAL_LOW)
+			log(f'Handling command type {command.type}', 'lattice2d_core')
 			self.on_command(command)
 		[child.on_update(dt) for child in self._children.values()]
