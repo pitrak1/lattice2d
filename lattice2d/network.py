@@ -4,7 +4,7 @@ import threading
 from lattice2d.command import deserialize
 from lattice2d.config import Config
 from lattice2d.nodes import Node
-from lattice2d.utilities.log import log
+from lattice2d.utilities import log
 
 
 class Network(Node):

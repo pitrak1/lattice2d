@@ -29,7 +29,7 @@
 	- destroys a player by connection
 	- arguments: the command from the player
 
-This class takes a more comprehensive approach to a multithreaded server.  It introduces the concept of ServerGames, whose attributes are in the corresponding class below.  This class also allows a command to be added to a ServerGame's queue instead of the main queue if the Player sending it has a ServerGame associated with them.  This separation of reponsibilities (the main queue for server-wide requests, the game queues for commands for that game) allows commands to not filter through every single game every time a game state changes.
+This class takes a more comprehensive approach to a multi-threaded server.  It introduces the concept of ServerGames, whose attributes are in the corresponding class below.  This class also allows a command to be added to a ServerGame's queue instead of the main queue if the Player sending it has a ServerGame associated with them.  This separation of responsibilities (the main queue for server-wide requests, the game queues for commands for that game) allows commands to not filter through every single game every time a game state changes.
 
 ## ServerGame Class
 - inherits from RootNode

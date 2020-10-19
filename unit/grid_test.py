@@ -5,6 +5,7 @@ from lattice2d.grid import \
 	GridEntity, \
 	TileGrid, \
 	Tile, \
+	Actor, \
 	get_distance, \
 	get_direction, \
 	reverse_direction, \
@@ -71,14 +72,14 @@ class TestTile:
 	class TestAddActor:
 		def test_adds_actor_to_children(self):
 			tile = Tile()
-			actor = GridEntity()
+			actor = Actor()
 			tile.add_actor('some_key', actor)
 			assert tile.get_actor('some_key') == actor
 
 		def test_sets_grid_position_of_actor(self):
 			tile = Tile()
 			tile.set_grid_position((1, 2))
-			actor = GridEntity()
+			actor = Actor()
 			tile.add_actor('key', actor)
 			assert actor.grid_position == (1, 2)
 
@@ -90,7 +91,7 @@ class TestTile:
 
 		def test_removes_actor_from_children(self):
 			tile = Tile()
-			actor = GridEntity()
+			actor = Actor()
 			tile.add_actor('key', actor)
 			tile.remove_actor('key')
 			with pytest.raises(KeyError):
@@ -99,7 +100,7 @@ class TestTile:
 		def test_clears_actor_grid_position(self):
 			tile = Tile()
 			tile.set_grid_position((1, 2))
-			actor = GridEntity()
+			actor = Actor()
 			tile.add_actor('key', actor)
 			tile.remove_actor('key')
 			assert actor.grid_position == (None, None)
@@ -174,7 +175,7 @@ class TestTileGrid:
 			tile = Tile()
 			grid.add_tile((3, 3), tile)
 			mocker.patch.object(tile, 'add_actor')
-			actor = GridEntity()
+			actor = Actor()
 			grid.add_actor((3, 3), 'key', actor)
 			tile.add_actor.assert_called_once_with('key', actor)
 
@@ -194,42 +195,6 @@ class TestTileGrid:
 			grid = TileGrid((5, 5))
 			with pytest.raises(AssertionError):
 				grid.move_actor((3, 2), (3, 3), {})
-
-		def test_calls_remove_actor_on_start_tile(self, mocker):
-			grid = TileGrid((5, 5))
-			mocker.patch.object(grid, 'add_adjacent_links')
-
-			start_tile = Tile()
-			mocker.patch.object(start_tile, 'remove_actor')
-			grid.add_tile((3, 3), start_tile)
-
-			end_tile = Tile()
-			mocker.patch.object(end_tile, 'add_actor')
-			grid.add_tile((3, 4), end_tile)
-
-			actor = GridEntity()
-			grid.add_actor((3, 3), 'key', actor)
-
-			grid.move_actor((3, 3), (3, 4), 'key')
-			start_tile.remove_actor.assert_called_once_with('key')
-
-		def test_calls_add_actor_on_end_tile(self, mocker):
-			grid = TileGrid((5, 5))
-			mocker.patch.object(grid, 'add_adjacent_links')
-
-			start_tile = Tile()
-			mocker.patch.object(start_tile, 'remove_actor')
-			grid.add_tile((3, 3), start_tile)
-
-			end_tile = Tile()
-			mocker.patch.object(end_tile, 'add_actor')
-			grid.add_tile((3, 4), end_tile)
-
-			actor = GridEntity()
-			grid.add_actor((3, 3), 'key', actor)
-
-			grid.move_actor((3, 3), (3, 4), 'key')
-			end_tile.add_actor.assert_called_once_with('key', actor)
 
 	class TestAdjustGridPositionHandler:
 		def test_updates_the_command_and_sends_to_default_handler(self, mocker, get_positional_args):

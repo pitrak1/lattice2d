@@ -34,12 +34,15 @@ class GridEntity(Node):
 		self.grid_position = grid_position
 		self.base_position = base_position
 		self.base_scale = 1.0
-		
+
 	def get_grid_position(self):
 		return self.grid_position
 
 	def set_grid_position(self, grid_position):
 		self.grid_position = grid_position
+
+	def set_base_position(self, position):
+		self.base_position = position
 
 	def adjust_grid_position_handler(self, command):
 		self.base_position = command.data['base_position']
@@ -57,26 +60,58 @@ class GridEntity(Node):
 		return x, y
 
 
-class Player(GridEntity):
-	def __init__(self, name, connection=None, game=None, grid_position=(None, None), base_position=(0, 0)):
-		super().__init__(grid_position, base_position)
-		self.name = name
-		self.connection = connection
-		self.game = game
+class Actor(GridEntity):
+	def on_exit_tile(self, tile):
+		pass
+
+	def on_enter_tile(self, tile):
+		pass
+
+	def on_attack(self, actor):
+		pass
+
+	def on_defend(self, actor):
+		pass
 
 
 class Tile(GridEntity):
 	def add_actor(self, key, actor):
+		if self.before_actor_enter(actor): return
+		if actor.on_enter_tile(self): return
+		self.add_actor_without_callbacks(key, actor)
+		self.after_actor_enter(actor)
+
+	def add_actor_without_callbacks(self, key, actor):
 		self._children[key] = actor
 		actor.set_grid_position(self.grid_position)
 
 	def remove_actor(self, key):
+		assert key in self._children.keys()
+		actor = self.get_actor(key)
+		if self.before_actor_exit(actor): return
+		if actor.on_exit_tile(self): return
+		self.remove_actor_without_callbacks(key)
+		self.after_actor_exit(actor)
+
+	def remove_actor_without_callbacks(self, key):
 		assert key in self._children.keys()
 		self._children[key].set_grid_position((None, None))
 		del self._children[key]
 
 	def get_actor(self, key):
 		return self._children[key]
+
+	def before_actor_enter(self, actor):
+		pass
+
+	def after_actor_enter(self, actor):
+		pass
+
+	def before_actor_exit(self, actor):
+		pass
+
+	def after_actor_exit(self, actor):
+		pass
 
 
 class TileGrid(Node):
@@ -122,19 +157,29 @@ class TileGrid(Node):
 		assert 0 <= grid_position[0] < self._grid_dimensions[0]
 		assert 0 <= grid_position[1] < self._grid_dimensions[1]
 		assert isinstance(self._children[grid_position[1] * self._grid_dimensions[0] + grid_position[0]], Tile)
+		actor.set_base_position(self.base_position)
 		self._children[grid_position[1] * self._grid_dimensions[0] + grid_position[0]].add_actor(key, actor)
-		actor.base_position = self.base_position
 
 	def move_actor(self, start_grid_position, end_grid_position, key):
 		assert 0 <= start_grid_position[0] < self._grid_dimensions[0] \
 		       and 0 <= start_grid_position[1] < self._grid_dimensions[1]
 		assert 0 <= end_grid_position[0] < self._grid_dimensions[0] and 0 <= end_grid_position[1] < \
 		       self._grid_dimensions[1]
-		assert isinstance(self._children[end_grid_position[1] * self._grid_dimensions[0] + end_grid_position[0]], Tile)
 
-		actor = self._children[start_grid_position[1] * self._grid_dimensions[0] + start_grid_position[0]].get_actor(key)
-		self._children[start_grid_position[1] * self._grid_dimensions[0] + start_grid_position[0]].remove_actor(key)
-		self._children[end_grid_position[1] * self._grid_dimensions[0] + end_grid_position[0]].add_actor(key, actor)
+		start_tile = self._children[start_grid_position[1] * self._grid_dimensions[0] + start_grid_position[0]]
+		end_tile = self._children[end_grid_position[1] * self._grid_dimensions[0] + end_grid_position[0]]
+
+		assert isinstance(end_tile, Tile)
+
+		actor = start_tile.get_actor(key)
+		if start_tile.before_actor_exit(actor): return
+		if end_tile.before_actor_enter(actor): return
+		if actor.on_exit_tile(start_tile): return
+		if actor.on_enter_tile(end_tile): return
+		start_tile.remove_actor_without_callbacks(key)
+		end_tile.add_actor_without_callbacks(key, actor)
+		if start_tile.after_actor_exit(actor): return
+		end_tile.after_actor_enter(actor)
 
 	def adjust_grid_position_handler(self, command):
 		self.base_position = (

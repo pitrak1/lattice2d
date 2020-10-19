@@ -1,6 +1,5 @@
 from lattice2d.config import Config
-from lattice2d.utilities.log import log
-from lattice2d.utilities.threaded_queue import ThreadedQueue
+from lattice2d.utilities import log, ThreadedQueue
 
 
 class Node:
