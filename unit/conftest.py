@@ -33,15 +33,6 @@ TEST_CONFIG = {
 	},
 	'assets': {
 		'path': os.path.join(ROOT_DIR, 'assets'),
-		'tiles': [],
-		'characters': [
-			{
-				'variable_name': 'test_character',
-				'display_name': 'Test Character',
-				'location': 'test.jpg',
-				'type': 'single'
-			}
-		],
 		'custom': [
 			{
 				'variable_name': 'test_custom',
@@ -75,6 +66,6 @@ def get_keyword_args():
 	return _get_keyword_args
 
 
-@pytest.fixture(autouse=True)
-def set_config():
-	Config(TEST_CONFIG)
+# @pytest.fixture(autouse=True)
+# def set_config():
+# 	Config(TEST_CONFIG)

@@ -18,20 +18,16 @@ class TestClient:
 			def test_loads_single(self):
 				assert isinstance(Assets().common['test_single'], pyglet.image.Texture)
 
-			def test_loads_grid(self):
+			def test_loads_grid_as_array(self):
 				assert isinstance(Assets().common['test_grid'], list)
 				assert isinstance(Assets().common['test_grid'][0], pyglet.image.Texture)
+
+			def test_loads_individual_grid_entries_if_keys_provided(self):
 				assert isinstance(Assets().common['test_grid_entry'], pyglet.image.Texture)
 
 		class TestGroups:
 			def test_loads_common_assets(self):
 				assert isinstance(Assets().common['test_common'], pyglet.image.Texture)
-
-			def test_loads_ui_assets(self):
-				assert isinstance(Assets().ui['test_ui'], pyglet.image.Texture)
-
-			def test_loads_character_assets(self):
-				assert isinstance(Assets().characters['test_character'], pyglet.image.Texture)
 
 			def test_loads_custom_assets(self):
 				assert isinstance(Assets().custom['test_custom'], pyglet.image.Texture)

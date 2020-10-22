@@ -1,5 +1,3 @@
-import os
-
 import pyglet
 
 from lattice2d.config import Config
@@ -8,70 +6,6 @@ from lattice2d.command import Command
 from lattice2d.network import Client
 from lattice2d.nodes import RootNode, Node
 from lattice2d.states import StateMachine, State
-
-COMMON = [
-	{
-		'variable_name': 'test_jpg',
-		'location': 'test.jpg',
-		'type': 'single'
-	},
-	{
-		'variable_name': 'test_png',
-		'location': 'test.png',
-		'type': 'single'
-	},
-	{
-		'variable_name': 'test_gif',
-		'location': 'test.gif',
-		'type': 'gif'
-	},
-	{
-		'variable_name': 'test_single',
-		'location': 'test.jpg',
-		'type': 'single'
-	},
-	{
-		'variable_name': 'test_grid',
-		'location': 'test.jpg',
-		'type': 'grid',
-		'rows': 9,
-		'columns': 8,
-		'assets': [
-			{
-				'variable_name': 'test_grid_entry',
-				'index': 0
-			}
-		]
-	},
-	{
-		'variable_name': 'test_common',
-		'location': 'test.jpg',
-		'type': 'single'
-	}
-]
-
-UI = [
-	{
-		'variable_name': 'test_ui',
-		'location': 'test.jpg',
-		'type': 'single'
-	},
-	{
-		'variable_name': 'grey_panel',
-		'location': 'grey_panel.png',
-		'type': 'grid',
-		'rows': 3,
-		'columns': 3
-	},
-	{
-		'variable_name': 'grey_button',
-		'location': 'grey_button.png',
-		'type': 'grid',
-		'rows': 3,
-		'columns': 3
-	}
-]
-
 
 class InnerAssets:
 	_shared_state = {}
@@ -84,37 +18,16 @@ class Assets(InnerAssets):
 	def __init__(self):
 		super().__init__()
 
-		if not hasattr(self, 'common'):
-			self.__load_local_assets()
-			self.__load_config_assets()
+		if not hasattr(self, 'custom'):
+			pyglet.resource.path = [Config()['assets']['path']]
+			pyglet.resource.reindex()
 
-	def __load_local_assets(self):
-		pyglet.resource.path = [os.path.join(ROOT_DIR, 'assets')]
-		pyglet.resource.reindex()
+			self.custom = {}
+			for entry in Config()['assets']['resources']:
+				self.__load_asset(entry, self.custom)
 
-		self.common = {}
-		for entry in COMMON:
-			self.__load_asset(entry, self.common)
-
-		self.ui = {}
-		for entry in UI:
-			self.__load_asset(entry, self.ui)
-
-	def __load_config_assets(self):
-		pyglet.resource.path = [Config()['assets']['path']]
-		pyglet.resource.reindex()
-
-		self.characters = {}
-		for entry in Config()['assets']['characters']:
-			self.__load_asset(entry, self.characters)
-
-		self.tiles = {}
-		for entry in Config()['assets']['tiles']:
-			self.__load_asset(entry, self.tiles)
-
-		self.custom = {}
-		for entry in Config()['assets']['custom']:
-			self.__load_asset(entry, self.custom)
+	def __getitem__(self, key):
+		return self.custom[key]
 
 	def __load_asset(self, entry, collection):
 		if entry['type'] == 'single':
@@ -145,17 +58,6 @@ class Assets(InnerAssets):
 		asset.anchor_y = asset.height / 2
 
 
-DRAW_LAYER_BACKGROUND_0 = 0
-DRAW_LAYER_BASE_1 = 1
-DRAW_LAYER_ENVIRONMENT_2 = 2
-DRAW_LAYER_ACTORS_3 = 3
-DRAW_LAYER_EFFECTS_4 = 4
-DRAW_LAYER_UI_5 = 5
-DRAW_LAYER_NOTIFICATIONS_6 = 6
-
-TOTAL_LAYERS = 7
-
-
 class ClientState(State):
 	def __init__(self, state_machine, custom_data={}):
 		super().__init__(state_machine, custom_data)
@@ -168,7 +70,7 @@ class ClientState(State):
 		self.__reset_rendering()
 
 	def register_component(self, identifier, layer, component):
-		assert 0 <= layer <= 6
+		assert layer in Config()['rendering']['layers']
 		assert identifier not in self._children.keys()
 
 		self.__create_groups_for_layer(layer)
@@ -201,16 +103,18 @@ class ClientState(State):
 			iter(component.on_command(command) for component in self._children.values()))
 
 	def __create_groups_for_layer(self, layer):
-		if not self.__groups[layer * Config()['group_count']]:
-			for i in range(layer * Config()['group_count'], (layer + 1) * Config()['group_count']):
+		groups_per_layer = Config()['rendering']['groups_per_layer']
+		if not self.__groups[layer * groups_per_layer]:
+			for i in range(layer * groups_per_layer, (layer + 1) * groups_per_layer):
 				self.__groups[i] = pyglet.graphics.OrderedGroup(i)
 
 	def __get_groups_for_layer(self, layer):
-		return self.__groups[layer * Config()['group_count']:(layer + 1) * Config()['group_count']]
+		groups_per_layer = Config()['rendering']['groups_per_layer']
+		return self.__groups[layer * groups_per_layer:(layer + 1) * groups_per_layer]
 
 	def __reset_rendering(self):
 		self.__batch = pyglet.graphics.Batch()
-		self.__groups = [None] * Config()['group_count'] * TOTAL_LAYERS
+		self.__groups = [None] * Config()['rendering']['groups_per_layer'] * len(Config()['rendering']['layers'])
 
 	def __redraw(self):
 		self.__reset_rendering()
@@ -219,3 +123,96 @@ class ClientState(State):
 			layer = self.__layers[identifier]
 			self.__create_groups_for_layer(layer)
 			component.register(self.__batch, self.__get_groups_for_layer(layer))
+
+
+class ClientCore(StateMachine):
+	def __init__(self):
+		super().__init__(Config()['client_states'])
+		self.__initialize_window()
+		self.__initialize_network()
+
+	def __initialize_window(self):
+		self.__window = pyglet.window.Window(
+			Config()['window_dimensions'][0],
+			Config()['window_dimensions'][1]
+		)
+		self.__window.push_handlers(self)
+
+	def __initialize_network(self):
+		if Config()['network']:
+			self._children['network'] = Client(self.add_command)
+
+	def on_draw(self):
+		self.__window.clear()
+		[child.on_draw() for child in self._children.values()]
+
+	def run(self):
+		pyglet.clock.schedule_interval(self.on_update, 1 / 120.0)
+		pyglet.app.run()
+
+	def on_activate(self):
+		self.add_command(Command('activate'))
+
+	def on_close(self):
+		self.add_command(Command('close'))
+
+	def on_context_lost(self):
+		self.add_command(Command('context_lost'))
+
+	def on_context_state_lost(self):
+		self.add_command(Command('context_state_lost'))
+
+	def on_deactivate(self):
+		self.add_command(Command('deactivate'))
+
+	def on_expose(self):
+		self.add_command(Command('expose'))
+
+	def on_hide(self):
+		self.add_command(Command('hide'))
+
+	def on_key_press(self, symbol, modifiers):
+		self.add_command(Command('key_press', {'symbol': symbol, 'modifiers': modifiers}))
+
+	def on_key_release(self, symbol, modifiers):
+		self.add_command(Command('key_release', {'symbol': symbol, 'modifiers': modifiers}))
+
+	def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
+		self.add_command(
+			Command('mouse_drag', {'x': x, 'y': y, 'dx': dx, 'dy': dy, 'buttons': buttons, 'modifiers': modifiers}))
+
+	def on_mouse_enter(self, x, y):
+		self.add_command(Command('mouse_enter', {'x': x, 'y': y}))
+
+	def on_mouse_leave(self, x, y):
+		self.add_command(Command('mouse_leave', {'x': x, 'y': y}))
+
+	def on_mouse_motion(self, x, y, dx, dy):
+		self.add_command(Command('mouse_motion', {'x': x, 'y': y, 'dx': dx, 'dy': dy}))
+
+	def on_mouse_press(self, x, y, button, modifiers):
+		self.add_command(Command('mouse_press', {'x': x, 'y': y, 'button': button, 'modifiers': modifiers}))
+
+	def on_mouse_release(self, x, y, button, modifiers):
+		self.add_command(Command('mouse_release', {'x': x, 'y': y, 'button': button, 'modifiers': modifiers}))
+
+	def on_mouse_scroll(self, x, y, dx, dy):
+		self.add_command(Command('mouse_scroll', {'x': x, 'y': y, 'dx': dx, 'dy': dy}))
+
+	def on_move(self, x, y):
+		self.add_command(Command('move', {'x': x, 'y': y}))
+
+	def on_resize(self, width, height):
+		self.add_command(Command('resize', {'width': width, 'height': height}))
+
+	def on_show(self):
+		self.add_command(Command('show'))
+
+	def on_text(self, text):
+		self.add_command(Command('text', {'text': text}))
+
+	def on_text_motion(self, motion):
+		self.add_command(Command('text_motion', {'motion': motion}))
+
+	def on_text_motion_select(self, motion):
+		self.add_command(Command('text_motion_select', {'motion': motion}))
