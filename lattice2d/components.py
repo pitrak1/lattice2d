@@ -1,8 +1,8 @@
 import pyglet
 
-from lattice2d.client.assets import Assets
+from lattice2d.client import Assets
 from lattice2d.nodes import Node
-from lattice2d.utilities.bounds import within_rect_bounds
+from lattice2d.utilities import within_rect_bounds
 from lattice2d.config import Config
 
 

@@ -24,30 +24,30 @@ class Assets(InnerAssets):
 
 			self.custom = {}
 			for entry in Config()['assets']['resources']:
-				self.__load_asset(entry, self.custom)
+				self.__load_asset(entry)
 
 	def __getitem__(self, key):
 		return self.custom[key]
 
-	def __load_asset(self, entry, collection):
+	def __load_asset(self, entry):
 		if entry['type'] == 'single':
 			image = pyglet.resource.image(entry['location'])
 			self.__center_asset(image)
-			collection[entry['variable_name']] = image
+			self.custom[entry['key']] = image
 			return image
 		elif entry['type'] == 'gif':
 			gif = pyglet.resource.animation(entry['location'])
 			self.__center_animation(gif)
-			collection[entry['variable_name']] = gif
+			self.custom[entry['key']] = gif
 		else:
 			image = pyglet.resource.image(entry['location'])
 			grid = list(pyglet.image.ImageGrid(image, entry['rows'], entry['columns']))
 			[self.__center_asset(i) for i in grid]
-			if 'variable_name' in entry.keys():
-				collection[entry['variable_name']] = grid
-			if 'assets' in entry.keys():
-				for single_asset in entry['assets']:
-					collection[single_asset['variable_name']] = grid[single_asset['index']]
+			if 'key' in entry.keys():
+				self.custom[entry['key']] = grid
+			if 'resources' in entry.keys():
+				for single_asset in entry['resources']:
+					self.custom[single_asset['key']] = grid[single_asset['index']]
 
 	def __center_animation(self, asset):
 		asset.anchor_x = asset.get_max_width() / 2
@@ -104,13 +104,15 @@ class ClientState(State):
 
 	def __create_groups_for_layer(self, layer):
 		groups_per_layer = Config()['rendering']['groups_per_layer']
-		if not self.__groups[layer * groups_per_layer]:
-			for i in range(layer * groups_per_layer, (layer + 1) * groups_per_layer):
+		layer_index = Config()['rendering']['layers'].index(layer)
+		if not self.__groups[layer_index * groups_per_layer]:
+			for i in range(layer_index * groups_per_layer, (layer_index + 1) * groups_per_layer):
 				self.__groups[i] = pyglet.graphics.OrderedGroup(i)
 
 	def __get_groups_for_layer(self, layer):
 		groups_per_layer = Config()['rendering']['groups_per_layer']
-		return self.__groups[layer * groups_per_layer:(layer + 1) * groups_per_layer]
+		layer_index = Config()['rendering']['layers'].index(layer)
+		return self.__groups[layer_index * groups_per_layer:(layer_index + 1) * groups_per_layer]
 
 	def __reset_rendering(self):
 		self.__batch = pyglet.graphics.Batch()
@@ -139,7 +141,7 @@ class ClientCore(StateMachine):
 		self.__window.push_handlers(self)
 
 	def __initialize_network(self):
-		if Config()['network']:
+		if 'network' in Config().data.keys():
 			self._children['network'] = Client(self.add_command)
 
 	def on_draw(self):

@@ -65,7 +65,3 @@ def get_keyword_args():
 
 	return _get_keyword_args
 
-
-# @pytest.fixture(autouse=True)
-# def set_config():
-# 	Config(TEST_CONFIG)
