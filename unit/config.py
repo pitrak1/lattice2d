@@ -38,7 +38,7 @@ CONFIG = {
 		'height': 10,
 		'size': 512
 	},
-	'command_types': [],
+	'command_types': ['test_command', 'test_command_2'],
 	'player_class': PlayerClass,
 	'empty_tile_class': EmptyTile,
 	'client_states': {

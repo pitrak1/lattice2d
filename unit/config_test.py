@@ -31,6 +31,7 @@ class TestConfig:
 			with pytest.raises(ConfigurationError):
 				Config(config)
 
+	@pytest.mark.skip(reason='the "network" entry in the config must be uncommented to run these')
 	class TestNetwork:
 		def test_network_is_optional(self):
 			config = copy.deepcopy(CONFIG)
