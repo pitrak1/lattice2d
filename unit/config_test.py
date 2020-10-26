@@ -67,6 +67,25 @@ class TestConfig:
 			with pytest.raises(ConfigurationError):
 				Config(config)
 
+	class TestLogging:
+		def test_logging_is_required(self):
+			config = copy.deepcopy(CONFIG)
+			del(config['logging'])
+			with pytest.raises(ConfigurationError):
+				Config(config)
+
+		def test_logging_must_be_a_dict(self):
+			config = copy.deepcopy(CONFIG)
+			config['logging'] = 'something'
+			with pytest.raises(ConfigurationError):
+				Config(config)
+
+		def test_logging_values_must_be_colors(self):
+			config = copy.deepcopy(CONFIG)
+			config['logging'] = ['not_a_color']
+			with pytest.raises(ConfigurationError):
+				Config(config)
+
 	class TestRendering:
 		def test_rendering_is_required(self):
 			config = copy.deepcopy(CONFIG)

@@ -2,7 +2,10 @@ import os
 import definitions
 
 class PlayerClass:
-	pass
+	def __init__(self, name, connection=None, game=None):
+		self.name = name
+		self.connection = connection
+		self.game = game
 
 class StartingState:
 	def __init__(self, state_machine, custom_data={}):
@@ -23,6 +26,9 @@ CONFIG = {
 	# 	'ip_address': '0.0.0.0',
 	# 	'port': 8080
 	# },
+	'logging': {
+		'some_logging_flag': 'cyan'
+	},
 	'rendering': {
 		'layers': ['background', 'base', 'environment', 'actors', 'effects', 'ui', 'notifications'],
 		'groups_per_layer': 6

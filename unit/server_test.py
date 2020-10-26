@@ -3,8 +3,12 @@ import types
 
 from lattice2d.command import Command
 from lattice2d.server import ServerCore, ServerState, ServerGame, Player
-from unit.conftest import TEST_CONFIG
+from lattice2d.config import Config
+from config import CONFIG
 
+@pytest.fixture(autouse=True)
+def set_config():
+	Config(CONFIG)
 
 @pytest.fixture
 def create_game(mocker, get_keyword_args):
@@ -62,7 +66,7 @@ class TestServer:
 	class TestServerCore:
 		class TestGames:
 			def test_creates_and_gets_games(self, mocker, get_keyword_args):
-				core = ServerCore(TEST_CONFIG, test=True)
+				core = ServerCore(test=True)
 
 				create_game_command = Command('create_game', {'game_name': 'game name here'})
 				mocker.patch.object(create_game_command, 'update_and_send')
@@ -76,7 +80,7 @@ class TestServer:
 				assert get_keyword_args(get_games_command.update_and_send, 0, 'data') == {'games': [('game name here', 0)]}
 
 			def test_destroys_games(self, mocker, get_keyword_args, create_game, get_games):
-				core = ServerCore(TEST_CONFIG, test=True)
+				core = ServerCore(test=True)
 				create_game(core, 'game name here')
 
 				destroy_game_command = Command('destroy_game', {'game_name': 'game name here'})
@@ -88,7 +92,7 @@ class TestServer:
 
 			def test_does_not_destroy_games_with_players(self, mocker, get_keyword_args,
 			                                             create_game, create_player, join_game):
-				core = ServerCore(TEST_CONFIG, test=True)
+				core = ServerCore(test=True)
 				create_game(core, 'game name here')
 				create_player(core, 'player name here', 'player connection')
 				join_game(core, 'game name here', 'player connection')
@@ -99,7 +103,7 @@ class TestServer:
 					core.on_command(destroy_game_command)
 
 			def test_destroys_games_directly(self, get_keyword_args, create_game, get_games):
-				core = ServerCore(TEST_CONFIG, test=True)
+				core = ServerCore(test=True)
 				create_game(core, 'game name here')
 				core.destroy_game('game name here')
 				get_games(core, [])
@@ -111,7 +115,7 @@ class TestServer:
 					create_player,
 					join_game
 			):
-				core = ServerCore(TEST_CONFIG, test=True)
+				core = ServerCore(test=True)
 				create_game(core, 'game name here')
 				create_player(core, 'player name here', 'player connection')
 				join_game(core, 'game name here', 'player connection')
@@ -121,14 +125,14 @@ class TestServer:
 
 		class TestPlayers:
 			def test_creates_player(self, create_player):
-				core = ServerCore(TEST_CONFIG, test=True)
+				core = ServerCore(test=True)
 				create_player(core, 'player name here', 'player connection')
 
-				assert core.players[0].name == 'player name here'
-				assert core.players[0].connection == 'player connection'
+				assert core.get_players()[0].name == 'player name here'
+				assert core.get_players()[0].connection == 'player connection'
 
 			def test_logs_out(self, mocker, create_player, get_keyword_args):
-				core = ServerCore(TEST_CONFIG, test=True)
+				core = ServerCore(test=True)
 				create_player(core, 'player name here', 'player connection')
 
 				logout_command = Command('logout', {}, connection='player connection')
@@ -136,10 +140,10 @@ class TestServer:
 				core.on_command(logout_command)
 				assert get_keyword_args(logout_command.update_and_send, 0, 'status') == 'success'
 
-				assert len(core.players) == 0
+				assert len(core.get_players()) == 0
 
 			def test_fails_if_logging_out_without_matching_connection(self, mocker, create_player, get_keyword_args):
-				core = ServerCore(TEST_CONFIG, test=True)
+				core = ServerCore(test=True)
 				create_player(core, 'player name here', 'player connection')
 
 				logout_command = Command('logout', {}, connection='other player connection')
@@ -148,7 +152,7 @@ class TestServer:
 					core.on_command(logout_command)
 
 			def test_allows_player_to_join_game(self, mocker, get_keyword_args, create_player, create_game, get_games):
-				core = ServerCore(TEST_CONFIG, test=True)
+				core = ServerCore(test=True)
 				create_game(core, 'game name')
 				create_player(core, 'player name here', 'player connection')
 
@@ -193,7 +197,7 @@ class TestServer:
 			def test_returns_self_in_player_name_if_current_player(self, mocker, get_keyword_args):
 				game = types.SimpleNamespace()
 				game.is_current_player = lambda player: True
-				game.players = []
+				game.get_players = lambda : []
 				state = ServerState(game)
 				command = Command('get_current_player')
 				mocker.patch.object(command, 'update_and_send')
@@ -206,8 +210,8 @@ class TestServer:
 				player.name = 'player1'
 				game = types.SimpleNamespace()
 				game.is_current_player = lambda p: False
-				game.get_current_player = lambda: player
-				game.players = []
+				game.get_current_player = lambda : player
+				game.get_players = lambda : []
 				state = ServerState(game)
 				command = Command('get_current_player')
 				mocker.patch.object(command, 'update_and_send')

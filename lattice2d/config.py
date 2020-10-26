@@ -1,5 +1,15 @@
 import inspect
 
+COLOR_CODES = {
+	'red': '\033[91m',
+	'green': '\033[92m',
+	'yellow': '\033[93m',
+	'purple': '\033[95m',
+	'cyan': '\033[96m',
+	'grey': '\033[97m',
+	'black': '\033[98m'
+}
+
 class ConfigurationError(AssertionError):
 	pass
 
@@ -16,6 +26,7 @@ class Config(InnerConfig):
 		if data:
 			self.__validate_window_dimensions(data)
 			self.__validate_network(data)
+			self.__validate_logging(data)
 			self.__validate_rendering(data)
 			self.__validate_grid(data)
 			self.__validate_command_types(data)
@@ -52,6 +63,18 @@ class Config(InnerConfig):
 				raise ConfigurationError('"network.port" is not present')
 			if not isinstance(data['network']['port'], int):
 				raise ConfigurationError('"network.port" is not an int')
+
+	def __validate_logging(self, data):
+		if not 'logging' in data.keys():
+			raise ConfigurationError('"logging" is not present')
+		if not isinstance(data['logging'], dict):
+			raise ConfigurationError('"logging" is not a dict')
+
+		for logging_color in data['logging'].values():
+			if not isinstance(logging_color, str):
+				raise ConfigurationError('"logging" value is not a string')
+			if not logging_color in COLOR_CODES.keys():
+				raise ConfigurationError('"logging" value is not a color')
 
 	def __validate_rendering(self, data):
 		if not 'rendering' in data.keys():
