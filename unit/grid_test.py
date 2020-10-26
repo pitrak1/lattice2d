@@ -14,7 +14,15 @@ from lattice2d.grid import \
 	DOWN, \
 	LEFT
 from lattice2d.config import Config
+from config import CONFIG, EmptyTile
 
+@pytest.fixture(autouse=True)
+def set_config():
+	Config(CONFIG)
+
+class TileGridTest(TileGrid):
+	def add_adjacent_links(self, start_tile, end_tile):
+		pass
 
 class TestGetDistance:
 	def test_returns_distance_if_zero(self):
@@ -70,17 +78,66 @@ class TestGridEntity:
 
 class TestTile:
 	class TestAddActor:
+		def test_calls_before_actor_enter_first(self):
+			class BeforeActorEnterTile(Tile):
+				def before_actor_enter(self, actor):
+					self.before_actor_enter_called = True
+					return True
+
+			tile = BeforeActorEnterTile()
+			actor = Actor()
+			tile.add_actor('some_key', actor)
+			assert tile.before_actor_enter_called
+
+		def test_calls_on_enter_tile_next(self):
+			class OnEnterTileTile(Tile):
+				def before_actor_enter(self, actor):
+					self.before_actor_enter_called = True
+
+			class OnEnterTileActor(Actor):
+				def on_enter_tile(self, tile):
+					self.on_enter_tile_called = True
+					return True
+
+			tile = OnEnterTileTile()
+			actor = OnEnterTileActor()
+			tile.add_actor('some_key', actor)
+			assert tile.before_actor_enter_called
+			assert actor.on_enter_tile_called
+
+		def test_calls_after_actor_enter_after_adding_actor(self, mocker):
+			class AfterActorEnterTile(Tile):
+				def before_actor_enter(self, actor):
+					self.before_actor_enter_called = True
+
+				def after_actor_enter(self, actor):
+					self.after_actor_enter_called = True
+
+			class AfterActorEnterActor(Actor):
+				def on_enter_tile(self, tile):
+					self.on_enter_tile_called = True
+
+			tile = AfterActorEnterTile()
+			actor = AfterActorEnterActor()
+			mocker.patch.object(tile, 'add_actor_without_callbacks')
+			tile.add_actor('some_key', actor)
+			assert tile.before_actor_enter_called
+			assert actor.on_enter_tile_called
+			tile.add_actor_without_callbacks.assert_called_once()
+			assert tile.after_actor_enter_called
+
+	class TestAddActorWithoutCallbacks:
 		def test_adds_actor_to_children(self):
 			tile = Tile()
 			actor = Actor()
-			tile.add_actor('some_key', actor)
+			tile.add_actor_without_callbacks('some_key', actor)
 			assert tile.get_actor('some_key') == actor
 
 		def test_sets_grid_position_of_actor(self):
 			tile = Tile()
 			tile.set_grid_position((1, 2))
 			actor = Actor()
-			tile.add_actor('key', actor)
+			tile.add_actor_without_callbacks('key', actor)
 			assert actor.grid_position == (1, 2)
 
 	class TestRemoveActor:
@@ -89,28 +146,85 @@ class TestTile:
 			with pytest.raises(AssertionError):
 				tile.remove_actor('key')
 
+		def test_calls_before_actor_exit_first(self):
+			class BeforeActorExitTile(Tile):
+				def before_actor_exit(self, actor):
+					self.before_actor_exit_called = True
+					return True
+
+			tile = BeforeActorExitTile()
+			actor = Actor()
+			tile.add_actor_without_callbacks('some_key', actor)
+			tile.remove_actor('some_key')
+			assert tile.before_actor_exit_called
+
+		def test_calls_on_exit_tile_next(self):
+			class OnExitTileTile(Tile):
+				def before_actor_exit(self, actor):
+					self.before_actor_exit_called = True
+
+			class OnExitTileActor(Actor):
+				def on_exit_tile(self, tile):
+					self.on_exit_tile_called = True
+					return True
+
+			tile = OnExitTileTile()
+			actor = OnExitTileActor()
+			tile.add_actor_without_callbacks('some_key', actor)
+			tile.remove_actor('some_key')
+			assert tile.before_actor_exit_called
+			assert actor.on_exit_tile_called
+
+		def test_calls_after_actor_exit_after_removing_actor(self, mocker):
+			class AfterActorExitTile(Tile):
+				def before_actor_exit(self, actor):
+					self.before_actor_exit_called = True
+
+				def after_actor_exit(self, actor):
+					self.after_actor_exit_called = True
+
+			class AfterActorExitActor(Actor):
+				def on_exit_tile(self, tile):
+					self.on_exit_tile_called = True
+
+			tile = AfterActorExitTile()
+			actor = AfterActorExitActor()
+			mocker.patch.object(tile, 'remove_actor_without_callbacks')
+			tile.add_actor_without_callbacks('some_key', actor)
+			tile.remove_actor('some_key')
+			assert tile.before_actor_exit_called
+			assert actor.on_exit_tile_called
+			tile.remove_actor_without_callbacks.assert_called_once()
+			assert tile.after_actor_exit_called
+
+	class TestRemoveActorWithoutCallbacks:
+		def test_throws_error_if_actor_is_not_in_children(self):
+			tile = Tile()
+			with pytest.raises(AssertionError):
+				tile.remove_actor_without_callbacks('key')
+
 		def test_removes_actor_from_children(self):
 			tile = Tile()
 			actor = Actor()
-			tile.add_actor('key', actor)
-			tile.remove_actor('key')
-			with pytest.raises(KeyError):
+			tile.add_actor_without_callbacks('key', actor)
+			tile.remove_actor_without_callbacks('key')
+			with pytest.raises(AssertionError):
 				assert tile.get_actor('key')
 
 		def test_clears_actor_grid_position(self):
 			tile = Tile()
 			tile.set_grid_position((1, 2))
 			actor = Actor()
-			tile.add_actor('key', actor)
-			tile.remove_actor('key')
+			tile.add_actor_without_callbacks('key', actor)
+			tile.remove_actor_without_callbacks('key')
 			assert actor.grid_position == (None, None)
 
 
 class TestTileGrid:
 	def test_initializes_empty_grid(self):
 		grid = TileGrid((5, 5))
-		assert isinstance(grid.get_tile_at_position((0, 0)), GridEntity)
-		assert isinstance(grid.get_tile_at_position((4, 4)), GridEntity)
+		assert isinstance(grid.get_tile_at_position((0, 0)), EmptyTile)
+		assert isinstance(grid.get_tile_at_position((4, 4)), EmptyTile)
 
 	class TestAddTile:
 		def test_throws_error_if_indices_out_of_bounds(self):
@@ -195,6 +309,174 @@ class TestTileGrid:
 			grid = TileGrid((5, 5))
 			with pytest.raises(AssertionError):
 				grid.move_actor((3, 2), (3, 3), {})
+
+		def test_calls_before_actor_exit_first(self):
+			class BeforeActorExitTile(Tile):
+				def before_actor_exit(self, actor):
+					self.before_actor_exit_called = True
+					return True
+
+			grid = TileGridTest((5, 5))
+			start_tile = BeforeActorExitTile()
+			grid.add_tile((0, 0), start_tile)
+			end_tile = BeforeActorExitTile()
+			grid.add_tile((1, 0), end_tile)
+			actor = Actor()
+			start_tile.add_actor_without_callbacks('key', actor)
+			grid.move_actor((0, 0), (1, 0), 'key')
+			assert start_tile.before_actor_exit_called
+
+		def test_calls_before_actor_enter_next(self):
+			class BeforeActorEnterTile(Tile):
+				def before_actor_exit(self, actor):
+					self.before_actor_exit_called = True
+
+				def before_actor_enter(self, actor):
+					self.before_actor_enter_called = True
+					return True
+
+			grid = TileGridTest((5, 5))
+			start_tile = BeforeActorEnterTile()
+			grid.add_tile((0, 0), start_tile)
+			end_tile = BeforeActorEnterTile()
+			grid.add_tile((1, 0), end_tile)
+			actor = Actor()
+			start_tile.add_actor_without_callbacks('key', actor)
+			grid.move_actor((0, 0), (1, 0), 'key')
+			assert start_tile.before_actor_exit_called
+			assert end_tile.before_actor_enter_called
+
+		def test_calls_on_exit_tile_next(self):
+			class OnExitTileTile(Tile):
+				def before_actor_exit(self, actor):
+					self.before_actor_exit_called = True
+
+				def before_actor_enter(self, actor):
+					self.before_actor_enter_called = True
+
+			class OnExitTileActor(Actor):
+				def on_exit_tile(self, tile):
+					self.on_exit_tile_called = tile
+					return True
+
+			grid = TileGridTest((5, 5))
+			start_tile = OnExitTileTile()
+			grid.add_tile((0, 0), start_tile)
+			end_tile = OnExitTileTile()
+			grid.add_tile((1, 0), end_tile)
+			actor = OnExitTileActor()
+			start_tile.add_actor_without_callbacks('key', actor)
+			grid.move_actor((0, 0), (1, 0), 'key')
+			assert start_tile.before_actor_exit_called
+			assert end_tile.before_actor_enter_called
+			assert actor.on_exit_tile_called == start_tile
+
+		def test_calls_on_enter_tile_next(self):
+			class OnEnterTileTile(Tile):
+				def before_actor_exit(self, actor):
+					self.before_actor_exit_called = True
+
+				def before_actor_enter(self, actor):
+					self.before_actor_enter_called = True
+
+			class OnEnterTileActor(Actor):
+				def on_exit_tile(self, tile):
+					self.on_exit_tile_called = tile
+
+				def on_enter_tile(self, tile):
+					self.on_enter_tile_called = tile
+					return True
+
+			grid = TileGridTest((5, 5))
+			start_tile = OnEnterTileTile()
+			grid.add_tile((0, 0), start_tile)
+			end_tile = OnEnterTileTile()
+			grid.add_tile((1, 0), end_tile)
+			actor = OnEnterTileActor()
+			start_tile.add_actor_without_callbacks('key', actor)
+			grid.move_actor((0, 0), (1, 0), 'key')
+			assert start_tile.before_actor_exit_called
+			assert end_tile.before_actor_enter_called
+			assert actor.on_exit_tile_called == start_tile
+			assert actor.on_enter_tile_called == end_tile
+
+		def test_calls_after_actor_exit_after_move(self, mocker):
+			class AfterActorExitTile(Tile):
+				def before_actor_exit(self, actor):
+					self.before_actor_exit_called = True
+
+				def before_actor_enter(self, actor):
+					self.before_actor_enter_called = True
+
+				def after_actor_exit(self, actor):
+					self.after_actor_exit_called = True
+					return True
+
+			class AfterActorExitActor(Actor):
+				def on_exit_tile(self, tile):
+					self.on_exit_tile_called = tile
+
+				def on_enter_tile(self, tile):
+					self.on_enter_tile_called = tile
+
+			grid = TileGridTest((5, 5))
+			start_tile = AfterActorExitTile()
+			grid.add_tile((0, 0), start_tile)
+			end_tile = AfterActorExitTile()
+			grid.add_tile((1, 0), end_tile)
+			actor = AfterActorExitActor()
+			start_tile.add_actor_without_callbacks('key', actor)
+			mocker.patch.object(start_tile, 'remove_actor_without_callbacks')
+			mocker.patch.object(end_tile, 'add_actor_without_callbacks')
+			grid.move_actor((0, 0), (1, 0), 'key')
+			assert start_tile.before_actor_exit_called
+			assert end_tile.before_actor_enter_called
+			assert actor.on_exit_tile_called == start_tile
+			assert actor.on_enter_tile_called == end_tile
+			start_tile.remove_actor_without_callbacks.called_once()
+			end_tile.add_actor_without_callbacks.called_once()
+			assert start_tile.after_actor_exit_called
+
+		def test_calls_after_actor_enter_next(self, mocker):
+			class AfterActorEnterTile(Tile):
+				def before_actor_exit(self, actor):
+					self.before_actor_exit_called = True
+
+				def before_actor_enter(self, actor):
+					self.before_actor_enter_called = True
+
+				def after_actor_exit(self, actor):
+					self.after_actor_exit_called = True
+
+				def after_actor_enter(self, actor):
+					self.after_actor_enter_called = True
+
+			class AfterActorEnterActor(Actor):
+				def on_exit_tile(self, tile):
+					self.on_exit_tile_called = tile
+
+				def on_enter_tile(self, tile):
+					self.on_enter_tile_called = tile
+
+			grid = TileGridTest((5, 5))
+			start_tile = AfterActorEnterTile()
+			grid.add_tile((0, 0), start_tile)
+			end_tile = AfterActorEnterTile()
+			grid.add_tile((1, 0), end_tile)
+			actor = AfterActorEnterActor()
+			start_tile.add_actor_without_callbacks('key', actor)
+			mocker.patch.object(start_tile, 'remove_actor_without_callbacks')
+			mocker.patch.object(end_tile, 'add_actor_without_callbacks')
+			grid.move_actor((0, 0), (1, 0), 'key')
+			assert start_tile.before_actor_exit_called
+			assert end_tile.before_actor_enter_called
+			assert actor.on_exit_tile_called == start_tile
+			assert actor.on_enter_tile_called == end_tile
+			start_tile.remove_actor_without_callbacks.called_once()
+			end_tile.add_actor_without_callbacks.called_once()
+			assert start_tile.after_actor_exit_called
+			assert end_tile.after_actor_enter_called
+
 
 	class TestAdjustGridPositionHandler:
 		def test_updates_the_command_and_sends_to_default_handler(self, mocker, get_positional_args):

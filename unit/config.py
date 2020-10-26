@@ -12,6 +12,10 @@ class OtherState:
 	def __init__(self, state_machine, custom_data={}):
 		pass
 
+class EmptyTile:
+	def __init__(self, grid_position=(None, None), base_position=(0, 0)):
+		pass
+
 
 CONFIG = {
 	'window_dimensions': (800, 600),
@@ -30,6 +34,7 @@ CONFIG = {
 	},
 	'command_types': [],
 	'player_class': PlayerClass,
+	'empty_tile_class': EmptyTile,
 	'client_states': {
 		'starting_state': StartingState,
 		'states': [

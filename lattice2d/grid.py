@@ -99,6 +99,7 @@ class Tile(GridEntity):
 		del self._children[key]
 
 	def get_actor(self, key):
+		assert key in self._children.keys()
 		return self._children[key]
 
 	def before_actor_enter(self, actor):
@@ -119,7 +120,7 @@ class TileGrid(Node):
 		super().__init__()
 		self._grid_dimensions = grid_dimensions
 		for i in range(self._grid_dimensions[0] * self._grid_dimensions[1]):
-			self._children[i] = GridEntity((i % self._grid_dimensions[0], i // self._grid_dimensions[1]))
+			self._children[i] = Config()['empty_tile_class']((i % self._grid_dimensions[0], i // self._grid_dimensions[1]))
 		self.base_position = base_position
 		self.base_scale = 1.0
 

@@ -20,6 +20,7 @@ class Config(InnerConfig):
 			self.__validate_grid(data)
 			self.__validate_command_types(data)
 			self.__validate_player_class(data)
+			self.__validate_empty_tile_class(data)
 			self.__validate_client_states(data)
 			self.__validate_server_states(data)
 			self.__validate_assets(data)
@@ -108,6 +109,12 @@ class Config(InnerConfig):
 			raise ConfigurationError('"player_class" is not present')
 		if not inspect.isclass(data['player_class']):
 			raise ConfigurationError('"player_class" is not a class')
+
+	def __validate_empty_tile_class(self, data):
+		if not 'empty_tile_class' in data.keys():
+			raise ConfigurationError('"empty_tile_class" is not present')
+		if not inspect.isclass(data['empty_tile_class']):
+			raise ConfigurationError('"empty_tile_class" is not a class')
 
 	def __validate_client_states(self, data):
 		if not 'client_states' in data.keys():
@@ -259,7 +266,3 @@ FULL_COMMAND_TYPES = [
 	'text_motion_select'
 ]
 
-UP = 0
-RIGHT = 1
-DOWN = 2
-LEFT = 3

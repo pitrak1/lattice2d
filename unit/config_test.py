@@ -185,9 +185,22 @@ class TestConfig:
 			with pytest.raises(ConfigurationError):
 				Config(config)
 
-		def test_player_class_must_be_a_dict(self):
+		def test_player_class_must_be_a_class(self):
 			config = copy.deepcopy(CONFIG)
 			config['player_class'] = {}
+			with pytest.raises(ConfigurationError):
+				Config(config)
+
+	class TestEmptyTileClass:
+		def test_empty_tile_class_is_required(self):
+			config = copy.deepcopy(CONFIG)
+			del(config['empty_tile_class'])
+			with pytest.raises(ConfigurationError):
+				Config(config)
+
+		def test_empty_tile_class_must_be_a_class(self):
+			config = copy.deepcopy(CONFIG)
+			config['empty_tile_class'] = {}
 			with pytest.raises(ConfigurationError):
 				Config(config)
 
