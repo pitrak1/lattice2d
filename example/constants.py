@@ -7,12 +7,18 @@ WINDOW_CENTER = (640, 360)
 
 CONSTANTS = {
 	'window_dimensions': (1280, 720),
-	'log_level': 3,
 	'network': {
 		'ip_address': '0.0.0.0',
 		'port': 8080
 	},
-	'group_count': 6,
+	'logging': {
+		'lattice2d_core': 'red',
+		'lattice2d_network': 'cyan'
+	},
+	'rendering': {
+		'layers': ['background', 'base', 'environment', 'actors', 'effects', 'ui', 'notifications'],
+		'groups_per_layer': 3
+	},
 	'grid': {
 		'width': 10,
 		'height': 10,

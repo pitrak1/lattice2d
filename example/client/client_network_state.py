@@ -1,6 +1,5 @@
-from lattice2d.client.client_state import ClientState
-from lattice2d.client.components.button import Button
-from lattice2d.client.components.label import Label
+from lattice2d.client import ClientState
+from lattice2d.components import Button, Label
 from example.constants import WINDOW_CENTER, CONSTANTS
 from lattice2d.command import Command
 
@@ -9,7 +8,7 @@ class ClientNetworkState(ClientState):
 	def __init__(self, add_command, custom_data={}):
 		self.response_count = 0
 		super().__init__(add_command, custom_data)
-		self.register_component('response_label', 0, Label(
+		self.register_component('response_label', 'base', Label(
 			'0',
 			x=WINDOW_CENTER[0] * 1.5,
 			y=CONSTANTS['window_dimensions'][1] - 420,
@@ -18,13 +17,13 @@ class ClientNetworkState(ClientState):
 			anchor_y='center',
 			color=(255, 255, 255, 255)
 		))
-		self.register_component('send_button', 0, Button(
+		self.register_component('send_button', 'base', Button(
 			position=(WINDOW_CENTER[0] // 2, CONSTANTS['window_dimensions'][1] - 380),
 			unit_dimensions=(8, 3),
 			text='Send Network Command',
 			on_click=self.button_press
 		))
-		self.register_component('info_label', 0, Label(
+		self.register_component('info_label', 'base', Label(
 			'Clicking the Button sends a request to the server.',
 			x=WINDOW_CENTER[0] // 2,
 			y=CONSTANTS['window_dimensions'][1] - 450,
@@ -33,7 +32,7 @@ class ClientNetworkState(ClientState):
 			anchor_y='center',
 			color=(255, 255, 255, 255)
 		))
-		self.register_component('counter_label', 0, Label(
+		self.register_component('counter_label', 'base', Label(
 			'Server responses:',
 			x=WINDOW_CENTER[0] * 1.5,
 			y=CONSTANTS['window_dimensions'][1] - 380,

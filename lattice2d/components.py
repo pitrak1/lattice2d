@@ -45,7 +45,7 @@ class Area(Component):
 		self.unit_dimensions = unit_dimensions
 		self.sprites = []
 
-		self.asset = Assets().ui[asset_key]
+		self.asset = Assets()[asset_key]
 		tile_size = self.asset[0].width
 
 		if align == 'left':

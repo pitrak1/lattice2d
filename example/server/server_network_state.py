@@ -1,4 +1,4 @@
-from lattice2d.server.server_state import ServerState
+from lattice2d.server import ServerState
 
 
 class ServerNetworkState(ServerState):
