@@ -50,7 +50,7 @@ For rendering, inheriting from the Component class and overriding the `register`
 
 ## Example
 
-An example project is located in `/example`.
+An example project is located at `https://github.com/pitrak1/betrayal-pyglet`.  This was the project that this library was initially designed for.
 
 ## Package Functionality
 
