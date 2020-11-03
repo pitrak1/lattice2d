@@ -6,6 +6,7 @@ from lattice2d.command import Command
 from lattice2d.network import Client
 from lattice2d.nodes import RootNode, Node
 from lattice2d.states import StateMachine, State
+from lattice2d.utilities import log
 
 class InnerAssets:
 	_shared_state = {}
@@ -58,6 +59,14 @@ class Assets(InnerAssets):
 		asset.anchor_y = asset.height / 2
 
 
+class Layer():
+	def __init__(self):
+		self.batch = pyglet.graphics.Batch()
+		self.group = pyglet.graphics.Group()
+		self.groups = []
+		for i in range(Config()['rendering']['groups_per_layer']):
+			self.groups.append(pyglet.graphics.OrderedGroup(i, self.group))
+
 class ClientState(State):
 	def __init__(self, state_machine, custom_data={}):
 		super().__init__(state_machine, custom_data)
@@ -66,65 +75,62 @@ class ClientState(State):
 
 	def reset(self):
 		self._children = {}
+		self.__component_layers = {}
 		self.__layers = {}
-		self.__reset_rendering()
 
-	def register_component(self, identifier, layer, component):
-		assert layer in Config()['rendering']['layers']
+	def register_component(self, identifier, layer_name, component, redraw=True):
+		assert layer_name in Config()['rendering']['layers']
 		assert identifier not in self._children.keys()
 
-		self.__create_groups_for_layer(layer)
+		self.__create_layer(layer_name)
 
 		self._children[identifier] = component
-		self.__layers[identifier] = layer
-		component.register(self.__batch, self.__get_groups_for_layer(layer))
-		self.__redraw()
+		self.__component_layers[identifier] = layer_name
+
+		for key, value in self.__component_layers.items():
+			log(f'identifier {key} in layer {value}', 'lattice2d_rendering')
+		print()
+
+		component.register(self.__layers[layer_name])
+		if redraw:
+			self.__redraw()
 
 	def get_component(self, identifier):
 		assert identifier in self._children.keys()
 		return self._children[identifier]
 
-	def remove_component(self, identifier):
+	def remove_component(self, identifier, redraw=True):
 		assert identifier in self._children.keys()
 
 		del self._children[identifier]
-		self.__redraw()
-
-	def conditionally_remove_component(self, identifier):
-		if identifier in self._children.keys():
-			del self._children[identifier]
+		if redraw:
 			self.__redraw()
 
+	def conditionally_remove_component(self, identifier, redraw=True):
+		if identifier in self._children.keys():
+			del self._children[identifier]
+			if redraw:
+				self.__redraw()
+
 	def on_draw(self):
-		self.__batch.draw()
+		for layer in self.__layers.values():
+			layer.batch.draw()
 
 	def default_handler(self, command):
 		return any(
-			iter(component.on_command(command) for component in self._children.values()))
+			[component.on_command(command) for component in self._children.values()])
 
-	def __create_groups_for_layer(self, layer):
-		groups_per_layer = Config()['rendering']['groups_per_layer']
-		layer_index = Config()['rendering']['layers'].index(layer)
-		if not self.__groups[layer_index * groups_per_layer]:
-			for i in range(layer_index * groups_per_layer, (layer_index + 1) * groups_per_layer):
-				self.__groups[i] = pyglet.graphics.OrderedGroup(i)
-
-	def __get_groups_for_layer(self, layer):
-		groups_per_layer = Config()['rendering']['groups_per_layer']
-		layer_index = Config()['rendering']['layers'].index(layer)
-		return self.__groups[layer_index * groups_per_layer:(layer_index + 1) * groups_per_layer]
-
-	def __reset_rendering(self):
-		self.__batch = pyglet.graphics.Batch()
-		self.__groups = [None] * Config()['rendering']['groups_per_layer'] * len(Config()['rendering']['layers'])
+	def __create_layer(self, layer_name):
+		if layer_name not in self.__layers.keys():
+			self.__layers[layer_name] = Layer()
 
 	def __redraw(self):
-		self.__reset_rendering()
+		self.__layers = {}
 
 		for identifier, component in self._children.items():
-			layer = self.__layers[identifier]
-			self.__create_groups_for_layer(layer)
-			component.register(self.__batch, self.__get_groups_for_layer(layer))
+			layer_name = self.__component_layers[identifier]
+			self.__create_layer(layer_name)
+			component.register(self.__layers[layer_name])
 
 
 class ClientCore(StateMachine):
@@ -218,3 +224,6 @@ class ClientCore(StateMachine):
 
 	def on_text_motion_select(self, motion):
 		self.add_command(Command('text_motion_select', {'motion': motion}))
+
+	def on_layout_update(self):
+		self.add_command(Command('layout_update'))

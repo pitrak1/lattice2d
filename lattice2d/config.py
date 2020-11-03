@@ -286,6 +286,7 @@ FULL_COMMAND_TYPES = [
 	'show',
 	'text',
 	'text_motion',
-	'text_motion_select'
+	'text_motion_select',
+	'layout_update'
 ]
 

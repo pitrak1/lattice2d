@@ -21,7 +21,7 @@ class Node:
 		return self.__handlers[command.type](command)
 
 	def default_handler(self, command):
-		return any(iter(child.on_command(command) for child in self._children.values()))
+		return any([child.on_command(command) for child in self._children.values()])
 
 	def on_update(self, dt=None):
 		[child.on_update(dt) for child in self._children.values()]
@@ -36,12 +36,14 @@ class RootNode(Node):
 		self._command_queue = ThreadedQueue()
 
 	def add_command(self, command):
-		log(f'Adding command type {command.type}', 'lattice2d_core')
+		if command.type != 'mouse_motion':
+			log(f'Adding command type {command.type}', 'lattice2d_core')
 		self._command_queue.append(command)
 
 	def on_update(self, dt=None):
 		while self._command_queue.has_elements():
 			command = self._command_queue.popleft()
-			log(f'Handling command type {command.type}', 'lattice2d_core')
+			if command.type != 'mouse_motion':
+				log(f'Handling command type {command.type}', 'lattice2d_core')
 			self.on_command(command)
 		[child.on_update(dt) for child in self._children.values()]

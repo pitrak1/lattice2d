@@ -4,10 +4,11 @@ from lattice2d.client import Assets
 from lattice2d.nodes import Node
 from lattice2d.utilities import within_rect_bounds
 from lattice2d.config import Config
+from lattice2d.utilities import log
 
 
 class Component(Node):
-	def register(self, batch, group_set):
+	def register(self, layer):
 		raise NotImplementedError
 
 
@@ -16,9 +17,9 @@ class Label(pyglet.text.Label, Component):
 		pyglet.text.Label.__init__(self, *args, **kwargs)
 		Component.__init__(self)
 
-	def register(self, batch, group_set):
-		self.batch = batch
-		self.group = group_set[0]
+	def register(self, layer):
+		self.batch = layer.batch
+		self.group = layer.groups[0]
 
 
 class Background(Component):
@@ -33,9 +34,9 @@ class Background(Component):
 		self.sprite.scale_y = Config()['window_dimensions'][1] / self.sprite.height
 		self.sprite.update(x=Config()['window_dimensions'][0] / 2, y=Config()['window_dimensions'][1] / 2)
 
-	def register(self, batch, group_set):
-		self.sprite.batch = batch
-		self.sprite.group = group_set[0]
+	def register(self, layer):
+		self.sprite.batch = layer.batch
+		self.sprite.group = layer.groups[0]
 
 
 class Area(Component):
@@ -76,10 +77,10 @@ class Area(Component):
 					y=position[1] - base_y_offset + tile_size * j,
 				)
 
-	def register(self, batch, group_set):
+	def register(self, layer):
 		for sprite in self.sprites:
-			sprite.batch = batch
-			sprite.group = group_set[0]
+			sprite.batch = layer.batch
+			sprite.group = layer.groups[0]
 
 	def within_bounds(self, position):
 		return within_rect_bounds(
@@ -106,10 +107,10 @@ class Button(Node):
 			color=(0, 0, 0, 255)
 		)
 
-	def register(self, batch, group_set):
-		self.area.register(batch, group_set)
-		self.label.batch = batch
-		self.label.group = group_set[1]
+	def register(self, layer):
+		self.area.register(layer)
+		self.label.batch = layer.batch
+		self.label.group = layer.groups[1]
 
 	def mouse_press_handler(self, command):
 		if self.area.within_bounds((command.data['x'], command.data['y'])):
@@ -121,15 +122,13 @@ class TextBox(Area):
 		super().__init__(position, (unit_width, 2), align='left')
 		self.label_text = label_text
 		self.document = pyglet.text.document.UnformattedDocument('')
-		self.document.set_style(0, 0, dict(color=(0, 0, 0, 255), font_size=15))
+		self.document.set_style(0, 100, { 'color': (0, 0, 0, 255), 'font_size': 14 })
 
-		self.layout = pyglet.text.layout.IncrementalTextLayout(self.document, unit_width * 16, 24, multiline=False)
+		self.layout = pyglet.text.layout.IncrementalTextLayout(self.document, unit_width * 50, 24)
 		self.layout.anchor_x = 'left'
 		self.layout.anchor_y = 'center'
 		self.layout.x = position[0]
 		self.layout.y = position[1]
-
-		self.caret = pyglet.text.caret.Caret(self.layout)
 
 		self.max_length = max_length
 		self.input_label = pyglet.text.Label(label_text, x=position[0], y=position[1] + self.asset[0].width + 15,
@@ -139,14 +138,16 @@ class TextBox(Area):
 		                                     align='left', font_size=15, color=(255, 0, 0, 255))
 		self.selected = False
 
-	def register(self, batch, group_set):
-		super().register(batch, group_set)
-		self.layout.batch = batch
-		self.layout.group = group_set[1]
-		self.input_label.batch = batch
-		self.input_label.group = group_set[1]
-		self.input_error.batch = batch
-		self.input_error.group = group_set[1]
+	def register(self, layer):
+		super().register(layer)
+		self.layout.batch = layer.batch
+		self.layout.group = layer.groups[1]
+		self.caret = pyglet.text.caret.Caret(self.layout, color=(0, 0, 0), batch=layer.batch)
+		self.input_label.batch = layer.batch
+		self.input_label.group = layer.groups[1]
+		self.input_error.batch = layer.batch
+		self.input_error.group = layer.groups[1]
+
 
 	def set_error_text(self, text):
 		self.input_error.text = text
@@ -169,22 +170,40 @@ class TextBox(Area):
 			self.caret.on_text_motion_select(command.data['motion'])
 			self.enforce_length()
 
+	def mouse_scroll_handler(self, command):
+		if self.selected:
+			self.caret.on_mouse_scroll(command.data['x'], command.data['y'], command.data['scroll_x'], command.data['scroll_y'])
+
 	def mouse_press_handler(self, command):
+		self.caret.on_mouse_press(command.data['x'], command.data['y'], command.data['button'],
+		                          command.data['modifiers'])
+
 		if self.within_bounds((command.data['x'], command.data['y'])):
 			self.caret.visible = True
-			self.caret.on_mouse_press(command.data['x'], command.data['y'], command.data['button'],
-			                          command.data['modifiers'])
 			self.selected = True
+
 		else:
 			self.caret.visible = False
-			self.caret.mark = self.caret.position = 0
 			self.selected = False
+
 
 	def mouse_drag_handler(self, command):
 		if self.selected:
 			self.caret.on_mouse_drag(command.data['x'], command.data['y'], command.data['dx'], command.data['dy'],
 			                         command.data['buttons'], command.data['modifiers'])
 			self.enforce_length()
+
+	def on_activate_handler(self, command):
+		if self.selected:
+			self.caret.on_activate()
+
+	def on_deactivate_handler(self, command):
+		if self.selected:
+			self.caret.on_deactivate()
+
+	def on_layout_update(self, command):
+		if self.selected:
+			self.caret.on_layout_update()
 
 	def enforce_length(self):
 		if len(self.document.text) > self.max_length:
