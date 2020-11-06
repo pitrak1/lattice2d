@@ -128,8 +128,8 @@ class TestServer:
 				core = ServerCore(test=True)
 				create_player(core, 'player name here', 'player connection')
 
-				assert core.get_players()[0].name == 'player name here'
-				assert core.get_players()[0].connection == 'player connection'
+				assert core.players[0].name == 'player name here'
+				assert core.players[0].connection == 'player connection'
 
 			def test_logs_out(self, mocker, create_player, get_keyword_args):
 				core = ServerCore(test=True)
@@ -140,7 +140,7 @@ class TestServer:
 				core.on_command(logout_command)
 				assert get_keyword_args(logout_command.update_and_send, 0, 'status') == 'success'
 
-				assert len(core.get_players()) == 0
+				assert len(core.players) == 0
 
 			def test_fails_if_logging_out_without_matching_connection(self, mocker, create_player, get_keyword_args):
 				core = ServerCore(test=True)
@@ -197,7 +197,7 @@ class TestServer:
 			def test_returns_self_in_player_name_if_current_player(self, mocker, get_keyword_args):
 				game = types.SimpleNamespace()
 				game.is_current_player = lambda player: True
-				game.get_players = lambda : []
+				game.players = []
 				state = ServerState(game)
 				command = Command('get_current_player')
 				mocker.patch.object(command, 'update_and_send')
@@ -211,7 +211,7 @@ class TestServer:
 				game = types.SimpleNamespace()
 				game.is_current_player = lambda p: False
 				game.get_current_player = lambda : player
-				game.get_players = lambda : []
+				game.players = []
 				state = ServerState(game)
 				command = Command('get_current_player')
 				mocker.patch.object(command, 'update_and_send')

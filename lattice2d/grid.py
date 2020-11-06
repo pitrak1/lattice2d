@@ -35,15 +35,6 @@ class GridEntity(Node):
 		self.base_position = base_position
 		self.base_scale = 1.0
 
-	def get_grid_position(self):
-		return self.grid_position
-
-	def set_grid_position(self, grid_position):
-		self.grid_position = grid_position
-
-	def set_base_position(self, position):
-		self.base_position = position
-
 	def adjust_grid_position_handler(self, command):
 		self.base_position = command.data['base_position']
 		self.default_handler(command)
@@ -83,7 +74,7 @@ class Tile(GridEntity):
 
 	def add_actor_without_callbacks(self, key, actor):
 		self._children[key] = actor
-		actor.set_grid_position(self.grid_position)
+		actor.grid_position = self.grid_position
 
 	def remove_actor(self, key):
 		assert key in self._children.keys()
@@ -95,7 +86,7 @@ class Tile(GridEntity):
 
 	def remove_actor_without_callbacks(self, key):
 		assert key in self._children.keys()
-		self._children[key].set_grid_position((None, None))
+		self._children[key].grid_position = (None, None)
 		del self._children[key]
 
 	def get_actor(self, key):
@@ -135,7 +126,7 @@ class TileGrid(Node):
 		assert 0 <= grid_position[1] < self._grid_dimensions[1]
 
 		self._children[grid_position[1] * self._grid_dimensions[0] + grid_position[0]] = tile
-		tile.set_grid_position(grid_position)
+		tile.grid_position = grid_position
 		tile.base_position = self.base_position
 
 		if grid_position[1] + 1 < self._grid_dimensions[1]:
@@ -158,7 +149,7 @@ class TileGrid(Node):
 		assert 0 <= grid_position[0] < self._grid_dimensions[0]
 		assert 0 <= grid_position[1] < self._grid_dimensions[1]
 		assert isinstance(self._children[grid_position[1] * self._grid_dimensions[0] + grid_position[0]], Tile)
-		actor.set_base_position(self.base_position)
+		actor.base_position = self.base_position
 		self._children[grid_position[1] * self._grid_dimensions[0] + grid_position[0]].add_actor(key, actor)
 
 	def move_actor(self, start_grid_position, end_grid_position, key):

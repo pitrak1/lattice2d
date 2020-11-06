@@ -11,7 +11,7 @@ def set_config():
 	Config(CONFIG)
 
 class ComponentClass(Component):
-	def register(self, batch, group_set):
+	def register(self, layer):
 		pass
 
 class TestClient:

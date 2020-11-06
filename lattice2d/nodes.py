@@ -33,16 +33,16 @@ class Node:
 class RootNode(Node):
 	def __init__(self):
 		super().__init__()
-		self._command_queue = ThreadedQueue()
+		self.command_queue = ThreadedQueue()
 
 	def add_command(self, command):
 		if command.type != 'mouse_motion':
 			log(f'Adding command type {command.type}', 'lattice2d_core')
-		self._command_queue.append(command)
+		self.command_queue.append(command)
 
 	def on_update(self, dt=None):
-		while self._command_queue.has_elements():
-			command = self._command_queue.popleft()
+		while self.command_queue.has_elements():
+			command = self.command_queue.popleft()
 			if command.type != 'mouse_motion':
 				log(f'Handling command type {command.type}', 'lattice2d_core')
 			self.on_command(command)

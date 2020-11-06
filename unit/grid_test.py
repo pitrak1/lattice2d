@@ -56,14 +56,9 @@ class TestReverseDirection:
 
 
 class TestGridEntity:
-	def test_gets_and_sets_grid_position(self):
-		entity = GridEntity()
-		entity.set_grid_position((2, 3))
-		assert entity.get_grid_position() == (2, 3)
-
 	def test_gets_scaled_position_from_base_position_and_scale(self):
 		entity = GridEntity()
-		entity.set_grid_position((2, 3))
+		entity.grid_position = (2, 3)
 
 		command = Command('adjust_grid_position', {'base_position': (1, 2)})
 		entity.on_command(command)
@@ -135,7 +130,7 @@ class TestTile:
 
 		def test_sets_grid_position_of_actor(self):
 			tile = Tile()
-			tile.set_grid_position((1, 2))
+			tile.grid_position = (1, 2)
 			actor = Actor()
 			tile.add_actor_without_callbacks('key', actor)
 			assert actor.grid_position == (1, 2)
@@ -213,7 +208,7 @@ class TestTile:
 
 		def test_clears_actor_grid_position(self):
 			tile = Tile()
-			tile.set_grid_position((1, 2))
+			tile.grid_position = (1, 2)
 			actor = Actor()
 			tile.add_actor_without_callbacks('key', actor)
 			tile.remove_actor_without_callbacks('key')

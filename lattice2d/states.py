@@ -10,14 +10,14 @@ class StateMachine(RootNode):
 		self.set_state(state_data['starting_state'])
 
 	def set_state(self, state, custom_data={}):
-		self._current_state = state(self, custom_data)
+		self.current_state = state(self, custom_data)
 
 		data = next(s for s in self._state_data['states'] if s['state'] == state)
 		for key, value in data['transitions'].items():
 			transition = Transition(self, key, value)
-			setattr(self._current_state, key, transition.run)
+			setattr(self.current_state, key, transition.run)
 
-		self._children['state'] = self._current_state
+		self._children['state'] = self.current_state
 
 
 class State(Node):

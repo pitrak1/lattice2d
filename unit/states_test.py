@@ -53,16 +53,16 @@ def create_state_machine():
 class TestStateMachine:
 	def test_starts_on_starting_state(self, create_state_machine):
 		state_machine = create_state_machine()
-		assert isinstance(state_machine.get_state(), MyState)
+		assert isinstance(state_machine.current_state, MyState)
 
 	def test_transitions_to_other_states(self, create_state_machine):
 		state_machine = create_state_machine()
-		state_machine.get_state().go_to_other_state()
-		assert isinstance(state_machine.get_state(), MyOtherState)
+		state_machine.current_state.go_to_other_state()
+		assert isinstance(state_machine.current_state, MyOtherState)
 
 	def test_allows_branching_transitions(self, create_state_machine):
 		state_machine = create_state_machine()
-		state_machine.get_state().go_to_other_state()
-		state_machine.get_state().go_back()
-		state_machine.get_state().go_to_other_other_state()
-		assert isinstance(state_machine.get_state(), MyOtherOtherState)
+		state_machine.current_state.go_to_other_state()
+		state_machine.current_state.go_back()
+		state_machine.current_state.go_to_other_other_state()
+		assert isinstance(state_machine.current_state, MyOtherOtherState)
