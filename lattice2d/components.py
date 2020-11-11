@@ -6,6 +6,75 @@ from lattice2d.utilities import within_rect_bounds
 from lattice2d.config import Config
 from lattice2d.utilities import log
 
+class Layer():
+	def __init__(self):
+		self.batch = pyglet.graphics.Batch()
+		self.__group = pyglet.graphics.Group()
+		self.groups = []
+		for i in range(Config()['rendering']['groups_per_layer']):
+			self.groups.append(pyglet.graphics.OrderedGroup(i, self.__group))
+
+
+class RootComponent(Component):
+	def __init__(self):
+		super().__init__()
+		self.add_command = state_machine.add_command
+		self.reset()
+
+	def reset(self):
+		self._children = {}
+		self.__component_layers = {}
+		self.__layers = {}
+
+	def register_component(self, identifier, layer_name, component, redraw=True):
+		assert layer_name in Config()['rendering']['layers']
+		assert identifier not in self._children.keys()
+
+		self.__create_layer(layer_name)
+
+		self._children[identifier] = component
+		self.__component_layers[identifier] = layer_name
+
+		component.register(self.__layers[layer_name])
+		if redraw:
+			self.__redraw()
+
+	def get_component(self, identifier):
+		assert identifier in self._children.keys()
+		return self._children[identifier]
+
+	def remove_component(self, identifier, redraw=True):
+		assert identifier in self._children.keys()
+
+		del self._children[identifier]
+		if redraw:
+			self.__redraw()
+
+	def conditionally_remove_component(self, identifier, redraw=True):
+		if identifier in self._children.keys():
+			del self._children[identifier]
+			if redraw:
+				self.__redraw()
+
+	def on_draw(self):
+		for layer in self.__layers.values():
+			layer.batch.draw()
+
+	def default_handler(self, command):
+		return any(
+			[component.on_command(command) for component in self._children.values()])
+
+	def __create_layer(self, layer_name):
+		if layer_name not in self.__layers.keys():
+			self.__layers[layer_name] = Layer()
+
+	def __redraw(self):
+		self.__layers = {}
+
+		for identifier, component in self._children.items():
+			layer_name = self.__component_layers[identifier]
+			self.__create_layer(layer_name)
+			component.register(self.__layers[layer_name])
 
 class Component(Node):
 	def register(self, layer):
@@ -17,10 +86,39 @@ class Label(pyglet.text.Label, Component):
 		pyglet.text.Label.__init__(self, *args, **kwargs)
 		Component.__init__(self)
 
-	def register(self, layer):
+	def register(self, layer, group_index=0):
 		self.batch = layer.batch
-		self.group = layer.groups[0]
+		if group_index:
+			self.group = layer.groups[group_index]
+		else:
+			self.group = layer.groups[0]
 
+class UnformattedText(pyglet.text.layout.TextLayout, Component):
+	def __init__(self, *args, **kwargs):
+		pyglet.text.layout.TextLayout.__init__(self, *args, **kwargs)
+		Component.__init__(self)
+
+	def set_style(self, attributes):
+		self.document.set_style(0, 0, attributes)
+
+	def set_position(self, position, anchor_x='left', anchor_y='center'):
+		self.x = position[0]
+		self.y = position[1]
+		self.anchor_x = anchor_x
+		self.anchor_y = anchor_y
+
+	def set_text(self, text):
+		self.document.text = text
+
+	def get_text(self):
+		return self.document.text
+
+	def register(self, layer, group_index=0):
+		self.batch = layer.batch
+		if group_index:
+			self.group = layer.groups[group_index]
+		else:
+			self.group = layer.groups[0]
 
 class Background(Component):
 	def __init__(self, asset_key):

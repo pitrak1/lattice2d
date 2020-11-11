@@ -133,6 +133,9 @@ class ServerState(State):
 			player_name = self.state_machine.get_current_player().name
 		command.update_and_send(status='success', data={'player_name': player_name})
 
+	def register_component(self, identifier, layer_name, component, redraw=True):
+		pass
+
 
 class Player(Node):
 	def __init__(self, name, connection=None, game=None):

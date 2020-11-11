@@ -1,4 +1,5 @@
 from lattice2d.config import Config
+from lattice2d.components import Component
 from lattice2d.nodes import Node
 
 UP = 0
@@ -28,9 +29,11 @@ def reverse_direction(direction):
 	return (direction + 2) % 4
 
 
-class GridEntity(Node):
-	def __init__(self, grid_position=(None, None), base_position=(0, 0)):
+class GridEntity(Component):
+	def __init__(self, state_machine, grid_position=(None, None), base_position=(0, 0)):
 		super().__init__()
+		self.state_machine = state_machine
+		self.add_command = state_machine.add_command
 		self.grid_position = grid_position
 		self.base_position = base_position
 		self.base_scale = 1.0
@@ -43,7 +46,7 @@ class GridEntity(Node):
 		self.base_scale = command.data['base_scale']
 		self.default_handler(command)
 
-	def get_scaled_position(self, grid_offset, raw_offset):
+	def get_scaled_position(self, grid_offset=(0, 0), raw_offset=(0, 0)):
 		x = (((self.grid_position[0] + grid_offset[0]) * Config()['grid']['size'] + raw_offset[0])
 		     * self.base_scale) + self.base_position[0]
 		y = (((self.grid_position[1] + grid_offset[1]) * Config()['grid']['size'] + raw_offset[1])
@@ -105,13 +108,22 @@ class Tile(GridEntity):
 	def after_actor_exit(self, actor):
 		pass
 
+	def within_bounds(self, position):
+		return within_square_bounds(
+			(self.grid_position[0] * Constants.grid_size, self.grid_position[1] * Constants.grid_size), 
+			position, 
+			Constants.grid_size
+		)
+
 
 class TileGrid(Node):
-	def __init__(self, grid_dimensions, base_position=(0, 0)):
+	def __init__(self, state_machine, grid_dimensions, base_position=(0, 0)):
 		super().__init__()
+		self.state_machine = state_machine
+		self.add_command = self.state_machine.add_command
 		self._grid_dimensions = grid_dimensions
 		for i in range(self._grid_dimensions[0] * self._grid_dimensions[1]):
-			self._children[i] = Config()['empty_tile_class']((i % self._grid_dimensions[0], i // self._grid_dimensions[1]))
+			self._children[i] = Config()['empty_tile_class'](state_machine, (i % self._grid_dimensions[0], i // self._grid_dimensions[1]))
 		self.base_position = base_position
 		self.base_scale = 1.0
 

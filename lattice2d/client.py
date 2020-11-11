@@ -87,10 +87,6 @@ class ClientState(State):
 		self._children[identifier] = component
 		self.__component_layers[identifier] = layer_name
 
-		for key, value in self.__component_layers.items():
-			log(f'identifier {key} in layer {value}', 'lattice2d_rendering')
-		print()
-
 		component.register(self.__layers[layer_name])
 		if redraw:
 			self.__redraw()
